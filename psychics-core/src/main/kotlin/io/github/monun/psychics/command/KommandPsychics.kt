@@ -1,0 +1,216 @@
+/*
+ * Copyright (c) 2020 monun
+ *
+ *  Licensed under the General Public License, Version 3.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ * https://opensource.org/licenses/gpl-3.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+package io.github.monun.psychics.command
+
+import io.github.monun.invfx.openFrame
+import io.github.monun.kommand.KommandSource
+import io.github.monun.kommand.PluginKommand
+import io.github.monun.psychics.AbilityConcept
+import io.github.monun.psychics.PsychicConcept
+import io.github.monun.psychics.PsychicManager
+import io.github.monun.psychics.esper
+import io.github.monun.psychics.invfx.InvPsychic
+import io.github.monun.psychics.item.PsychicItem
+import io.github.monun.psychics.item.addItemNonDuplicate
+import io.github.monun.psychics.item.psionicsLevel
+import io.github.monun.psychics.plugin.PsychicsPlugin
+import net.kyori.adventure.text.Component.text
+import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.Material
+import org.bukkit.entity.Player
+
+internal object KommandPsychics {
+    private lateinit var plugin: PsychicsPlugin
+    private lateinit var manager: PsychicManager
+
+    fun register(plugin: PsychicsPlugin, manager: PsychicManager, kommand: PluginKommand) {
+        this.plugin = plugin
+        this.manager = manager
+
+        kommand.register("psychics", "psy") {
+            requires {
+                hasPermission("psychics.commands")
+            }
+
+            val psychicConceptArgument = dynamic { _, input ->
+                manager.getPsychicConcept(input)
+            }.apply {
+                suggests {
+                    suggest(manager.psychicConceptsByName.keys)
+                }
+            }
+            val abilityArgument = dynamic { context, input ->
+                context.source.playerOrNull?.let { player ->
+                    player.esper.psychic?.abilities?.find { it.concept.name == input }
+                }
+            }
+
+            then("attach") {
+                then("players" to players()) {
+                    then("psychic" to psychicConceptArgument) {
+                        executes {
+                            attach(it["players"], it["psychic"])
+                        }
+                    }
+                }
+            }
+            then("detach") {
+                then("player" to player()) {
+                    executes {
+                        detach(it["player"])
+                    }
+                }
+            }
+            then("info") {
+                requires { playerOrNull != null }
+                then("psychic" to psychicConceptArgument) {
+                    executes {
+                        info(it["psychic"])
+                    }
+                }
+                executes {
+                    val psychic = manager.getEsper(player)?.psychic
+
+                    if (psychic == null) sender.sendMessage("능력이 없습니다.")
+                    else info(psychic.concept)
+                }
+            }
+            then("guide") {
+                then("player" to player()) {
+                    then("psychic" to psychicConceptArgument) {
+                        executes {
+                            info(it["psychic"], it["player"], true)
+                        }
+                    }
+                }
+            }
+            then("supply") {
+                requires { playerOrNull != null }
+                executes {
+                    supply()
+                }
+                then("ability" to abilityArgument) {
+                    executes {
+                        supply(it["ability"])
+                    }
+                }
+            }
+            then("enchant") {
+                then("level" to int(0, 5)) {
+                    requires { playerOrNull != null }
+                    executes {
+                        enchant(it["level"])
+                    }
+                }
+            }
+            then("reload") {
+                executes {
+                    plugin.reloadPsychics()
+                    broadcast(text().content("Psychics reload complete.").color(NamedTextColor.GREEN))
+                }
+            }
+            then("mana") {
+                then("players" to players()) {
+                    then("add") {
+                        then("number" to int()) {
+                            executes {
+                                mana(it["players"], it["number"], "add")
+                            }
+                        }
+                    }
+                    then("set") {
+                        then("number" to int()) {
+                            executes {
+                                mana(it["players"], it["number"], "set")
+                            }
+                        }
+                    }
+                    then("percent") {
+                        then("number" to int(0, 100)) {
+                            executes {
+                                mana(it["players"], it["number"], "percent")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun KommandSource.info(psychicConcept: PsychicConcept, who: Player = player, guide: Boolean = false) {
+        who.openFrame(InvPsychic.create(psychicConcept, who.esper::getStatistic, guide))
+    }
+
+    private fun KommandSource.attach(players: List<Player>, psychicConcept: PsychicConcept) {
+        for (player in players) {
+            requireNotNull(manager.getEsper(player)).attachPsychic(psychicConcept).isEnabled = true
+            feedback(text().content(player.name).append(text("'s ability =")).append(text(psychicConcept.name)))
+        }
+    }
+
+    private fun KommandSource.detach(player: Player) {
+        player.esper.detachPsychic()
+        feedback(text().content(player.name).append(text("'s ability = NONE")))
+    }
+
+    private fun KommandSource.supply() {
+        val esper = requireNotNull(manager.getEsper(player))
+        esper.psychic?.let {
+            for (abilityConcept in it.concept.abilityConcepts) {
+                supply(abilityConcept)
+            }
+        }
+    }
+
+    private fun KommandSource.supply(abilityConcept: AbilityConcept) {
+        player.inventory.addItemNonDuplicate(abilityConcept.supplyItems)
+    }
+
+    private fun KommandSource.enchant(level: Int) {
+        val item = player.inventory.itemInMainHand
+
+        if (item.type == Material.AIR) {
+            player.sendMessage(text("인챈트할 아이템을 손에 들어주세요."))
+            return
+        }
+
+        item.psionicsLevel = level
+        feedback(text("아이템에 $level 레벨 ${PsychicItem.psionicsTag.content()}(을)를 부여했습니다."))
+    }
+
+    private fun KommandSource.mana(players: List<Player>, number: Int, apply: String) {
+        for (player in players) {
+
+            val psychic = manager.getEsper(player)?.psychic
+            if (psychic != null) {
+                when (apply) {
+                    "add" -> {
+                        psychic.mana += number
+                    }
+                    "set" -> {
+                        psychic.mana = number.toDouble()
+                    }
+                    else -> {
+                        psychic.mana = psychic.concept.mana * number.toDouble() / 100.0
+                    }
+                }
+            }
+        }
+        feedback(text("마나 적용을 완료했습니다."))
+    }
+}
