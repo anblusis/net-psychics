@@ -44,7 +44,7 @@ internal object KommandPsychics {
 
         kommand.register("psychics", "psy") {
             requires {
-                hasPermission("psychics.commands")
+                hasPermission(4)
             }
 
             val psychicConceptArgument = dynamic { _, input ->

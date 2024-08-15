@@ -5,6 +5,7 @@ import io.github.monun.psychics.ActiveAbility
 import io.github.monun.psychics.Channel
 import io.github.monun.tap.config.Config
 import io.github.monun.tap.config.Name
+import net.kyori.adventure.text.Component.text
 import org.bukkit.*
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.LivingEntity
@@ -28,6 +29,10 @@ class AbilityConceptSnatch : AbilityConcept() {
         castingTime = 1500L
         range = 64.0
         wand = ItemStack(Material.FISHING_ROD)
+        description = listOf(
+            text("능력 사용 시 잠시 후 바라보는 장소 근처의 적들을"),
+            text("눈 앞으로 끌고 옵니다.")
+        )
     }
 }
 

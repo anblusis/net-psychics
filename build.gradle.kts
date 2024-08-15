@@ -19,6 +19,7 @@ subprojects {
 
     repositories {
         maven("https://papermc.io/repo/repository/maven-public/")
+        maven("https://repo.dmulloy2.net/nexus/repository/public/")
     }
 
     dependencies {
@@ -28,5 +29,6 @@ subprojects {
         implementation(kotlin("reflect"))
 
         implementation("io.github.monun:tap-api:4.9.8")
+        implementation("com.comphenix.protocol:ProtocolLib:5.2.0-SNAPSHOT")
     }
 }

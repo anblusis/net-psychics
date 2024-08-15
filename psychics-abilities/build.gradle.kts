@@ -25,7 +25,7 @@ subprojects {
                 expand(project.properties)
             }
         }
-
+        
         val paperJar = register<Jar>("paperJar") {
             archiveVersion.set("")
             archiveBaseName.set("${project.group}.${project.name.removePrefix("ability-")}")

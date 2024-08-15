@@ -19,6 +19,7 @@ import org.bukkit.*
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Bee
 import org.bukkit.entity.LivingEntity
+import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerEvent
@@ -63,13 +64,13 @@ class AbilityConceptDrone : AbilityConcept() {
 
 class AbilityDrone : ActiveAbility<AbilityConceptDrone>(), Listener {
 
-    var using = false
+    private var using = false
 
-    var stand: FakeEntity<ArmorStand>? = null
+    private var stand: FakeEntity<ArmorStand>? = null
 
-    var standTask: TickerTask? = null
+    private var standTask: TickerTask? = null
 
-    var bee: FakeEntity<Bee>? = null
+    private var bee: FakeEntity<Bee>? = null
 
 
     override fun onEnable() {
@@ -114,11 +115,12 @@ class AbilityDrone : ActiveAbility<AbilityConceptDrone>(), Listener {
         stand?.addPassenger(bee as FakeEntity)
     }
 
+    @EventHandler
     fun onDeath(event: PlayerDeathEvent) {
         if (using) abilityCancel()
     }
 
-    fun abilityCancel() {
+    private fun abilityCancel() {
         val player = esper.player
         using = false
         if (player.gameMode == GameMode.SURVIVAL || player.gameMode == GameMode.ADVENTURE) {
@@ -131,13 +133,13 @@ class AbilityDrone : ActiveAbility<AbilityConceptDrone>(), Listener {
         bee?.remove()
     }
 
-    fun onAttack() {
+    private fun onAttack() {
         if (using) {
             val player = esper.player
             val location = player.eyeLocation
             val range = concept.range
             location.getNearbyEntities(
-                range.toDouble(), range.toDouble(), range.toDouble()
+                range, range, range
             ).filter { entity -> player.hostileFilter().test(entity) }
                 .forEach { entity ->
                     if (entity is LivingEntity) {
@@ -204,7 +206,6 @@ class AbilityDrone : ActiveAbility<AbilityConceptDrone>(), Listener {
             trail.velocity?.let { velocity ->
                 val from = trail.from
                 val length = velocity.normalizeAndLength()
-                val world = from.world
 
                 from.world.rayTrace(
                     from,
@@ -225,7 +226,7 @@ class AbilityDrone : ActiveAbility<AbilityConceptDrone>(), Listener {
             world.playSound(hitLocation, Sound.ENTITY_GENERIC_EXPLODE, 1.5F, 0.1F)
             world.spawnParticle(Particle.EXPLOSION_LARGE, hitLocation, 4, range / 2, range / 2, range / 2, 0.0)
             hitLocation.getNearbyEntities(
-                range.toDouble(), range.toDouble(), range.toDouble()
+                range, range, range
             ).filter { entity -> esper.player.hostileFilter().test(entity) }.forEach { entity ->
                 if (entity is LivingEntity) {
                     entity.psychicDamage()
