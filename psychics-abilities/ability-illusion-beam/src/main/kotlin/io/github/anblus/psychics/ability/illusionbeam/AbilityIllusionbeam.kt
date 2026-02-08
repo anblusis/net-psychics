@@ -9,6 +9,8 @@ import io.github.monun.psychics.attribute.EsperAttribute
 import io.github.monun.psychics.attribute.EsperStatistic
 import io.github.monun.psychics.damage.Damage
 import io.github.monun.psychics.damage.DamageType
+import io.github.monun.psychics.tooltip.TooltipBuilder
+import io.github.monun.psychics.tooltip.stats
 import io.github.monun.psychics.util.TargetFilter
 import io.github.monun.tap.config.Config
 import io.github.monun.tap.fake.FakeEntity
@@ -16,6 +18,7 @@ import io.github.monun.tap.fake.Movement
 import io.github.monun.tap.fake.Trail
 import io.github.monun.tap.math.normalizeAndLength
 import io.github.monun.tap.trail.TrailSupport
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.*
 import org.bukkit.block.Block
 import org.bukkit.entity.*
@@ -35,6 +38,9 @@ class AbilityConceptIllusionBeam : AbilityConcept() {
     @Config
     val beamRandomness = 0.2
 
+    @Config
+    val maxBeamDamageMultiple = 10.0
+
     init {
         displayName = "환상빔"
         type = AbilityType.ACTIVE
@@ -47,9 +53,13 @@ class AbilityConceptIllusionBeam : AbilityConcept() {
             text("바라보는 방향으로 환상빔을 발사합니다."),
             text("환상빔을 맞은 블록은 무작위 블록으로 바뀝니다."),
             text("환상빔을 맞은 엔티티는 무작위 엔티티로 바뀝니다."),
-            text("환상빔을 맞은 플레이어는 약간의 데미지만 입습니다.")
+            text("환상빔을 맞은 플레이어는 거리에 비례해 피해를 받습니다.")
         )
         wand = ItemStack(Material.STICK)
+    }
+
+    override fun onRenderTooltip(tooltip: TooltipBuilder, stats: (EsperStatistic) -> Double) {
+        tooltip.stats(maxBeamDamageMultiple) { NamedTextColor.RED to "최대 피해 계수" to "배" }
     }
 }
 
@@ -160,7 +170,11 @@ class AbilityIllusionBeam : ActiveAbility<AbilityConceptIllusionBeam>(), Listene
 
         private fun changeEntity(entity: LivingEntity) {
             if (entity is Player) {
-                entity.psychicDamage()
+                val multiple = 1.0 + (1 - this.availableRange / this.range) * (concept.maxBeamDamageMultiple - 1.0)
+                val stat = esper.getStatistic(concept.damage!!.stats) * multiple
+                val damage = Damage.of(concept.damage!!.type, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to stat))
+
+                entity.psychicDamage(damage = damage)
                 return
             }
 

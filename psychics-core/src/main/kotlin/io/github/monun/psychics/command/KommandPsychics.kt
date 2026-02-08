@@ -111,10 +111,18 @@ internal object KommandPsychics {
                 }
             }
             then("enchant") {
-                then("level" to int(0, 5)) {
-                    requires { playerOrNull != null }
-                    executes {
-                        enchant(it["level"])
+                then("player" to player()) {
+                    then("level" to int(0, 5)) {
+                        then("add") {
+                            executes {
+                                enchant(it["player"], it["level"], "add")
+                            }
+                        }
+                        then("set") {
+                            executes {
+                                enchant(it["player"], it["level"], "set")
+                            }
+                        }
                     }
                 }
             }
@@ -127,21 +135,21 @@ internal object KommandPsychics {
             then("mana") {
                 then("players" to players()) {
                     then("add") {
-                        then("number" to int()) {
+                        then("number" to double()) {
                             executes {
                                 mana(it["players"], it["number"], "add")
                             }
                         }
                     }
                     then("set") {
-                        then("number" to int()) {
+                        then("number" to double()) {
                             executes {
                                 mana(it["players"], it["number"], "set")
                             }
                         }
                     }
                     then("percent") {
-                        then("number" to int(0, 100)) {
+                        then("number" to double(0.0, 100.0)) {
                             executes {
                                 mana(it["players"], it["number"], "percent")
                             }
@@ -181,7 +189,7 @@ internal object KommandPsychics {
         player.inventory.addItemNonDuplicate(abilityConcept.supplyItems)
     }
 
-    private fun KommandSource.enchant(level: Int) {
+    private fun KommandSource.enchant(player: Player, level: Int, apply: String) {
         val item = player.inventory.itemInMainHand
 
         if (item.type == Material.AIR) {
@@ -189,7 +197,14 @@ internal object KommandPsychics {
             return
         }
 
-        item.psionicsLevel = level
+        when (apply) {
+            "add" -> {
+                item.psionicsLevel = (item.psionicsLevel + level).coerceAtMost(5)
+            }
+            "set" -> {
+                item.psionicsLevel = level
+            }
+        }
         feedback(text("아이템에 $level 레벨 ${PsychicItem.psionicsTag.content()}(을)를 부여했습니다."))
     }
 

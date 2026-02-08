@@ -18,7 +18,7 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     repositories {
-        maven("https://papermc.io/repo/repository/maven-public/")
+        maven("https://repo.papermc.io/repository/maven-public/")
         maven("https://repo.dmulloy2.net/nexus/repository/public/")
     }
 
@@ -29,6 +29,5 @@ subprojects {
         implementation(kotlin("reflect"))
 
         implementation("io.github.monun:tap-api:4.9.8")
-        implementation("com.comphenix.protocol:ProtocolLib:5.2.0-SNAPSHOT")
     }
 }

@@ -26,6 +26,7 @@ import io.github.monun.psychics.item.isPsychicbound
 import io.github.monun.psychics.item.psionicsLevel
 import io.github.monun.psychics.item.removeAllPsychicbounds
 import io.github.monun.tap.fake.FakeEntityServer
+import net.kyori.adventure.text.Component
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.Firework
@@ -223,16 +224,25 @@ class EventListener(
 
 private fun Psychic.castByWand(event: PlayerEvent, action: ActiveAbility.WandAction, item: ItemStack) {
     esper.psychic?.let { psychic ->
-        val ability = psychic.getAbilityByWand(item)
+        val abilities = psychic.getAbilitiesByWand(item)
+            .filterIsInstance<ActiveAbility<*>>()
 
-        if (ability is ActiveAbility) {
+        if (abilities.isEmpty()) return
+
+        var anySuccess = false
+        var firstFailMessage: Component? = null
+
+        for (ability in abilities) {
             val result = ability.tryCast(event, action)
-
-            if (result !== TestResult.Success) {
-                result.message(ability)?.let { message ->
-                    esper.player.sendActionBar(message)
-                }
+            if (result === TestResult.Success) {
+                anySuccess = true
+            } else if (firstFailMessage == null) {
+                firstFailMessage = result.message(ability)
             }
+        }
+
+        if (!anySuccess && firstFailMessage != null) {
+            esper.player.sendActionBar(firstFailMessage)
         }
     }
 }

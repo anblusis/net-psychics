@@ -292,6 +292,17 @@ class Psychic internal constructor(
     }
 
     /**
+     * [AbilityConcept.wand] 속성이 같은 모든 [Ability]를 반환합니다.
+     * 다중 매칭을 허용하기 위한 유틸 함수입니다.
+     */
+    fun getAbilitiesByWand(item: ItemStack): List<Ability<*>> {
+        return abilities.filter { ability ->
+            val wand = ability.concept.internalWand
+            wand != null && wand.isSimilar(item)
+        }
+    }
+
+    /**
      * 태스크를 delay만큼 후에 실행합니다.
      *
      * 능력이 비활성화 될 때 취소됩니다.

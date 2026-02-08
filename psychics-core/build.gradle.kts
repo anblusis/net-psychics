@@ -5,7 +5,6 @@ plugins {
 dependencies {
     implementation("io.github.monun:kommand-api:3.1.7")
     implementation("io.github.monun:invfx-api:3.3.2")
-    implementation("com.comphenix.protocol:ProtocolLib:5.2.0-SNAPSHOT")
 }
 
 tasks {

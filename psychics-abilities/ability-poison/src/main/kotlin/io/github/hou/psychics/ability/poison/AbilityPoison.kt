@@ -29,7 +29,10 @@ class AbilityConceptPoison : AbilityConcept() {
     var givedamage = 0.5
 
     @Config
-    var poisonchance = 0.2
+    var receivedamage = 0.8
+
+    @Config
+    var poisonchance = 0.15
 
     @Config
     var maxpoisonlevel = 5
@@ -40,7 +43,7 @@ class AbilityConceptPoison : AbilityConcept() {
         cost = 0.0
         cooldownTime = 1000L
         description = listOf(
-            text("체력이 증가하지만 공격력이 감소합니다."),
+            text("받는 피해와 주는 피해가 감소합니다."),
             text("적을 공격하거나, 적에게 공격 받으면 일정 확률로"),
             text("상대에게 독 효과를 부여합니다."),
             text("이미 독이 걸린 상대에게 또 다시 능력이 발동하면"),
@@ -51,6 +54,8 @@ class AbilityConceptPoison : AbilityConcept() {
     override fun onRenderTooltip(tooltip: TooltipBuilder, stats: (EsperStatistic) -> Double) {
         tooltip.stats(poisonchance * 100) { NamedTextColor.GREEN to "중독 확률" to "%" }
         tooltip.stats(maxpoisonlevel) { NamedTextColor.DARK_GREEN to "최대 중첩" to "레벨" }
+        tooltip.stats(givedamage) { NamedTextColor.RED to "주는 피해" to "배" }
+        tooltip.stats(receivedamage) { NamedTextColor.BLUE to "받는 피해" to "배" }
     }
 
 }
@@ -64,6 +69,7 @@ class AbilityPoison : Ability<AbilityConceptPoison>(), Listener {
     @EventHandler(ignoreCancelled = true)
     fun onDamage(event: EntityDamageByEntityEvent) {
         if (event.damager is LivingEntity) {
+            event.damage *= (concept.receivedamage)
             if (nextDouble() < concept.poisonchance) {
                 if (cooldownTime <= 0L) {
                     val location = event.damager.location.apply { y += 0.5 }

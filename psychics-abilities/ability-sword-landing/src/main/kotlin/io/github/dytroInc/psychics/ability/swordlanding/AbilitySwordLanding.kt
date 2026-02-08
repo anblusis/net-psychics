@@ -29,37 +29,41 @@ import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Vector
 
 // 주변 아군들의 속도 증가 + 힐 능력
 @Name("sword-landing")
 class AbilityConceptSwordLanding : AbilityConcept() {
     @Config
-    var golden = Damage.of(DamageType.BLAST, EsperAttribute.ATTACK_DAMAGE to 5.0)
+    var golden = Damage.of(DamageType.BLAST, EsperAttribute.ATTACK_DAMAGE to 3.0)
 
     @Config
-    var iron = Damage.of(DamageType.BLAST, EsperAttribute.ATTACK_DAMAGE to 8.0)
+    var iron = Damage.of(DamageType.BLAST, EsperAttribute.ATTACK_DAMAGE to 4.0)
 
     @Config
-    var diamond = Damage.of(DamageType.BLAST, EsperAttribute.ATTACK_DAMAGE to 11.0)
+    var diamond = Damage.of(DamageType.BLAST, EsperAttribute.ATTACK_DAMAGE to 5.0)
 
     @Config
-    var netherite = Damage.of(DamageType.BLAST, EsperAttribute.ATTACK_DAMAGE to 14.0)
+    var netherite = Damage.of(DamageType.BLAST, EsperAttribute.ATTACK_DAMAGE to 6.0)
 
     @Config
-    var default = Damage.of(DamageType.BLAST, EsperAttribute.ATTACK_DAMAGE to 1.0)
+    var default = Damage.of(DamageType.BLAST, EsperAttribute.ATTACK_DAMAGE to 2.0)
 
     init {
         type = AbilityType.ACTIVE
         cooldownTime = 50000L
+        cost = 25.0
         range = 5.0
         description = listOf(
             text("검을 땅에서 네 블록 떨어진 공중에서 우클릭하면"),
-            text("땅으로 낙하하면서 주변에게 데미지를 줍니다.")
+            text("땅으로 낙하하면서 주변에게 데미지를 줍니다."),
+            text("낙하 직후 잠시동안 점프 강화가 주어집니다.")
         )
         wand = ItemStack(Material.IRON_SWORD)
         displayName = "낙하 공격"
-        knockback = 2.5
+        knockback = 2.0
     }
 
     override fun onRenderTooltip(tooltip: TooltipBuilder, stats: (EsperStatistic) -> Double) {
@@ -128,6 +132,7 @@ class AbilitySwordLanding : Ability<AbilityConceptSwordLanding>(), Listener {
                     cooldownTime = concept.cooldownTime
                     val cooldownTicks = (concept.cooldownTime / 50).toInt()
                     updateCooldown(cooldownTicks)
+                    psychic.consumeMana(concept.cost)
                     isLanding = true
                 }
 
@@ -175,6 +180,8 @@ class AbilitySwordLanding : Ability<AbilityConceptSwordLanding>(), Listener {
                     0.01
                 )
                 isLanding = false
+                // 점프 강화 부여
+                player.addPotionEffect(PotionEffect(PotionEffectType.JUMP, 60, 5))
             }
         }
     }

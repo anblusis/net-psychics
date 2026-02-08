@@ -33,7 +33,7 @@ class AbilityConceptHeavenlyStrike : AbilityConcept() {
     val attackIntervalTick = 40
 
     @Config
-    val maxRingRadius = 3.0
+    val maxRingRadius = 6.0
 
     @Config
     val firstRingRadius = 1.0
@@ -48,9 +48,9 @@ class AbilityConceptHeavenlyStrike : AbilityConcept() {
         displayName = "UFO"
         type = AbilityType.ACTIVE
         cooldownTime = 15000L
-        range = 16.0
-        cost = 12.0
-        damage = Damage.of(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 4.0))
+        range = 32.0
+        cost = 10.0
+        damage = Damage.of(DamageType.RANGED, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 2.5))
         description = listOf(
             text("능력 사용 시 중력이 사라지고 주기적으로 아래로 파동을 발사합니다."),
             text("파동에 닿은 적들은 피해와 함께 공중 부양 효과를 받습니다."),
@@ -101,6 +101,7 @@ class AbilityHeavenlyStrike : ActiveAbility<AbilityConceptHeavenlyStrike>(), Lis
             world.spawnParticle(Particle.WAX_ON, player.location, 8, 0.5, 1.0, 0.5, 0.2)
         }
 
+        player.fallDistance = 0f
         isActive = false
         task.cancel()
         floors.forEach { it.remove() }
@@ -198,6 +199,8 @@ class AbilityHeavenlyStrike : ActiveAbility<AbilityConceptHeavenlyStrike>(), Lis
 
         player.sendMessage(text("UFO 탑승!").color(NamedTextColor.GOLD))
         player.setGravity(false)
+        player.velocity = Vector(player.velocity.x, 0.0, player.velocity.z)
+        player.fallDistance = 0f
 
         world.playSound(player.location, Sound.BLOCK_BREWING_STAND_BREW, 2.0f, 2.0f)
     }
