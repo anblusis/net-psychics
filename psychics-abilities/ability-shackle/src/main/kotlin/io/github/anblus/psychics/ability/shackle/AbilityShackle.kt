@@ -27,6 +27,7 @@ import org.bukkit.entity.LivingEntity
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
+import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityTeleportEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerTeleportEvent
@@ -42,13 +43,16 @@ import kotlin.random.Random.Default.nextDouble
 class AbilityConceptShackle : AbilityConcept() {
 
     @Config
-    val durationPerCost = EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 1.0)
+    val defaultDurationPerCost = 0.9
 
     @Config
-    val maxDurationAboutOne = EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 5.0)
+    val attackDamageDurationPerCost = EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 0.1)
 
     @Config
-    val invalidTimeToShackle = 2.0
+    val maxDurationMultiple = 5.0
+
+    @Config
+    val invalidTimeToShackle = 10.0
 
     init {
         displayName = "속박"
@@ -57,21 +61,23 @@ class AbilityConceptShackle : AbilityConcept() {
         cooldownTime = 0L
         range = 20.0
         description = listOf(
-            text("좌클릭 시 지정한 상대를 구속 시키고, 매 초 마나를 소비합니다."),
+            text("좌클릭 시 마나를 지속적으로 소모하여 지정한 상대를 구속합니다."),
             text("구속은 상대에게 일정 시간 이상 유지되면 자동으로 해제됩니다."),
             text("구속에서 풀려난 상대에겐 곧바로 능력을 사용할 수 없습니다."),
             text("이미 속박한 상대가 있어도 다른 상대를 구속할 수 있습니다."),
             text("이 때 여러 명을 구속했다면 마나는 더욱 빨리 소모됩니다."),
             text("우클릭 시 즉시 현재 구속한 상대를 모두 해방시킵니다."),
-            text("구속 상태에서 텔레포트시 구속 상태가 해제됩니다.")
+            text("구속 상태에서 텔레포트 혹은 피격 시 구속 상태가 해제됩니다.")
         )
         wand = ItemStack(Material.STRING)
 
     }
 
     override fun onRenderTooltip(tooltip: TooltipBuilder, stats: (EsperStatistic) -> Double) {
-        tooltip.stats(stats(durationPerCost)) { NamedTextColor.DARK_PURPLE to "마나 소모당 구속 시간" to "초" }
-        tooltip.stats(stats(maxDurationAboutOne)) { NamedTextColor.DARK_GREEN to "최대 구속 시간" to "초" }
+        val duration = defaultDurationPerCost + stats(attackDamageDurationPerCost)
+        tooltip.stats(duration) { NamedTextColor.DARK_PURPLE to "마나 소모당 구속 시간" to "초" }
+        tooltip.stats(duration * maxDurationMultiple) { NamedTextColor.DARK_GREEN to "최대 구속 시간" to "초" }
+        tooltip.stats(invalidTimeToShackle) { NamedTextColor.DARK_RED to "재구속까지 시간" to "초" }
     }
 }
 
@@ -266,13 +272,13 @@ class AbilityShackle : Ability<AbilityConceptShackle>(), Listener {
 
         private var invalidTick: Int = round(concept.invalidTimeToShackle * 20.0).toInt()
 
-        private val defaultDurationTick: Int = round(esper.getStatistic(concept.durationPerCost) * 20.0).toInt()
+        private val defaultDurationTick: Int = ((concept.defaultDurationPerCost + esper.getStatistic(concept.attackDamageDurationPerCost)) * 20.0).toInt()
 
-        private var durationTick: Int = round(esper.getStatistic(concept.durationPerCost) * 20.0).toInt()
+        private var durationTick: Int = defaultDurationTick
 
         private var totalTick: Int = 0
 
-        private var maxTick: Int = round(esper.getStatistic(concept.maxDurationAboutOne) * 20.0).toInt()
+        private var maxTick: Int = (durationTick * concept.maxDurationMultiple).toInt()
 
         init {
             repeat(8) {
@@ -362,6 +368,11 @@ class AbilityShackle : Ability<AbilityConceptShackle>(), Listener {
         @EventHandler(ignoreCancelled = true)
         fun onPlayerJump(event: PlayerJumpEvent) {
             event.isCancelled = true
+        }
+
+        @EventHandler(ignoreCancelled = true)
+        fun onEntityDamage(event: EntityDamageByEntityEvent) {
+            untie()
         }
     }
 }

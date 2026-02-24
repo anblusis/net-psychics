@@ -42,9 +42,9 @@ class AbilityConceptSniping : AbilityConcept() {
         displayName = "저격"
         type = AbilityType.ACTIVE
         cooldownTime = 5000L
-        cost = 10.0
+        cost = 15.0
         range = 256.0
-        damage = Damage.of(DamageType.RANGED, EsperAttribute.ATTACK_DAMAGE to 4.0)
+        damage = Damage.of(DamageType.RANGED, EsperAttribute.ATTACK_DAMAGE to 3.0)
         description = listOf(
             text("능력 아이템을 든 채 좌클릭을 누르거나 손을 바꿀시"),
             text("머리 판정을 가진 이펙트를 발사합니다.")

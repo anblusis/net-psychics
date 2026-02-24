@@ -32,15 +32,15 @@ import kotlin.random.Random
 
 @Name("starfall")
 class AbilityConceptStarfall : AbilityConcept() {
-    @Config var minStarsPerCast = 6                 // 별 최소 개수
-    @Config var maxStarsPerCast = 30              // 별 최대 개수
+    @Config var minStarCount = 4                        // 최소 별 개수
+    @Config var maxStarCount = 50                       // 최대 별 개수
 
-    @Config var speedBlocksPerTick = 3.0          // 낙하(이동) 속도 (block/tick)
+    @Config var speedBlocksPerTick = 5.0          // 낙하(이동) 속도 (block/tick)
 
     @Config var minDist = 8.0                     // 각도 보간용 최소 거리
 
     @Config var minAngleDeg = 20.0                // 최소 거리일 때 좌우 최대 각도
-    @Config var maxAngleDeg = 60.0                // 최대 거리일 때 좌우 최대 각도
+    @Config var maxAngleDeg = 50.0                // 최대 거리일 때 좌우 최대 각도
 
     @Config var explosionRadius = 3.0             // 착지 폭발 반경
     @Config var explosionPower = 2.0f              // 착지 폭발 위력
@@ -54,17 +54,17 @@ class AbilityConceptStarfall : AbilityConcept() {
         range = 64.0
         damage = Damage.of(DamageType.BLAST, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 6.0))
         description = listOf(
-            text("능력 사용 시 해당 블록을 중심으로 하늘에서 별을 떨어뜨립니다."),
+            text("능력 사용 시 해당 블록까지의 부채꼴에 별을 떨어뜨립니다."),
             text("별은 지면에 닿으면 폭발하고 소규모 광역 피해를 줍니다."),
-            text("먼 곳에서 능력을 사용할수록 별이 더 많이 떨어집니다.")
+            text("넓은 범위에 능력을 사용할수록 별이 더 많이 떨어집니다.")
         )
         wand = ItemStack(Material.ECHO_SHARD)
     }
 
     override fun onRenderTooltip(tooltip: TooltipBuilder, stats: (EsperStatistic) -> Double) {
         tooltip.stats(minDist) { NamedTextColor.BLUE to "최소 사거리" to "블록" }
-        tooltip.stats(minStarsPerCast) { NamedTextColor.YELLOW to "최소 별 개수" to "개" }
-        tooltip.stats(maxStarsPerCast) { NamedTextColor.GREEN to "최대 별 개수" to "개" }
+        tooltip.stats(minStarCount) { NamedTextColor.YELLOW to "최소 별 개수" to "개" }
+        tooltip.stats(maxStarCount) { NamedTextColor.GREEN to "최대 별 개수" to "개" }
     }
 }
 
@@ -107,45 +107,48 @@ class AbilityStarfall : ActiveAbility<AbilityConceptStarfall>(), Listener {
         val d = player.location.clone().apply { y = hit.y }.distance(hit)
         val dRatio = ((d - concept.minDist) / (concept.range - concept.minDist))
 
-        val starCount = (concept.minStarsPerCast + (concept.maxStarsPerCast - concept.minStarsPerCast) * dRatio).toInt()
+        // 부채꼴 최대 각도(라디안) 보간
         val thetaRad = Math.toRadians(concept.minAngleDeg + (concept.maxAngleDeg - concept.minAngleDeg) * dRatio)
 
-        val totalTicks = concept.durationTime / 50L // 밀리초를 틱으로 변환
-        val interval = totalTicks / starCount // 별 하나당 간격 (틱)
+        val starCount = (concept.minStarCount + ((concept.maxStarCount - concept.minStarCount) * dRatio)).toInt()
+
+        val interval = (concept.durationTime / 50 / starCount).coerceAtLeast(1)
 
         val location = player.location.clone()
+        val forward = location.direction.clone().setY(0.0).normalize()
 
         // 각 별을 일정 간격으로 떨어뜨림
         repeat(starCount) { index ->
             psychic.runTask({
-                spawnStar(hit, location, d, thetaRad)
+                spawnStar(hit, location, forward, d, thetaRad)
             }, interval * index)
         }
     }
 
-    private fun spawnStar(hit: Location, location: Location, distance: Double, angle: Double) {
-        val forward = location.direction.clone().setY(0.0).normalize()
-
+    private fun spawnStar(hit: Location, location: Location, forward: Vector, distance: Double, angle: Double) {
+        // 부채꼴(섹터) 내부에 균일하게 낙하지점을 샘플링
+        // - 각도: [-angle, angle]
+        // - 반경: [0, distance] (면적 균일 분포를 위해 r = sqrt(u) * R)
         val randomAngle = Random.nextDouble(-angle, angle)
-        val rotated = forward.clone().rotateAroundY(randomAngle)
+        val dir = forward.clone().rotateAroundY(randomAngle)
 
-        // 목표 XZ 위치 = 플레이어 위치 + 회전 전방 * d, 목표 Y는 사용자가 조준한 hit의 Y
-        val targetXZ = location.clone().add(rotated.clone().multiply(distance))
+        val r = sqrt(Random.nextDouble()) * distance
+        val targetXZ = location.clone().add(dir.multiply(r))
         val targetLoc = Location(location.world, targetXZ.x, hit.y, targetXZ.z)
 
-        // 시작 위치: 플레이어 위 + 좌우 지터
+        // 시작 위치: 낙하지점 위에서 약간의 지터
         val jitter = Vector(
             Random.nextDouble(-distance, distance),
             0.0,
             Random.nextDouble(-distance, distance)
         )
 
-        val startLoc = location.clone().add(0.0, concept.range*2, 0.0).add(jitter)
+        val startLoc = location.clone().add(jitter).apply { y = world.maxHeight.toDouble().coerceAtMost(y + 128) }
 
         val targetDirection = targetLoc.clone().subtract(startLoc).toVector().normalize()
         targetLoc.direction = targetDirection
 
-        TrailSupport.trail(startLoc, targetLoc.clone().add(targetLoc.direction.clone().multiply(10)), 0.5) { w, x, y, z ->
+        TrailSupport.trail(startLoc, targetLoc.clone().add(targetLoc.direction.clone().multiply(10)), 1.0) { w, x, y, z ->
             w.spawnParticle(Particle.SPELL_WITCH, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
         }
 

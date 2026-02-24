@@ -26,8 +26,6 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
-import kotlin.math.exp
-import kotlin.math.sin
 
 @Name("wave-rider")
 class AbilityConceptWaveRider : AbilityConcept() {
@@ -69,14 +67,6 @@ class AbilityWaveRider : ActiveAbility<AbilityConceptWaveRider>(), Listener {
         const val UPWARD_VELOCITY = 1.1
         const val STEP_UP_VELOCITY = 0.42
         const val DEPTH_COUNT = 8
-        const val WAVE_FREQUENCY = 1.5
-        const val WAVE_DECAY = 0.15
-        const val CURL_INTENSITY = 1.3
-        const val CREST_FOAM_CHANCE = 0.18
-        const val EXPLOSION_HORIZONTAL = 2.0
-        const val EXPLOSION_UPWARD = 0.1
-        const val EXPLOSION_FRICTION = 0.95
-        const val EXPLOSION_GRAVITY = 0.09
     }
 
     private val wavePieces = mutableListOf<WavePiece>()
@@ -243,14 +233,7 @@ class AbilityWaveRider : ActiveAbility<AbilityConceptWaveRider>(), Listener {
     }
 
     private fun calculateWaveCrestHeight(): Double {
-        val t = tick * 0.15
-        // sin(f * z * PI - t) 최대 => zNorm = (PI/2 + t)/(f*PI) mod 1
-        val zNormPeak = ((Math.PI / 2.0 + t) / (WAVE_FREQUENCY * Math.PI)) % 1.0
-        val sinComponent = 1.0 // 최대값
-        val expDecay = exp(-WAVE_DECAY * zNormPeak * 3.0)
-        val curlEffect = 1.0 // x 중심
-        val crest = concept.waveAmplitude * sinComponent * expDecay * curlEffect
-        return crest * 0.95 // 살짝 낮춰 플레이어 히트박스 안정
+        return concept.waveAmplitude
     }
 
     private fun updateWaveDisplays() {
@@ -262,48 +245,28 @@ class AbilityWaveRider : ActiveAbility<AbilityConceptWaveRider>(), Listener {
         val spacing = 0.5
         val centerBias = -0.5
 
-        val t = tick * 0.15
-        val peakZNorm = ((Math.PI / 2.0 + t) / (WAVE_FREQUENCY * Math.PI)) % 1.0
-        val peakZIndex = (peakZNorm * (DEPTH_COUNT - 1)).toInt()
-
+        val half = concept.waveWidth / 2
         for (piece in wavePieces) {
             val xIdx = piece.xIndex
             val zIdx = piece.zIndex
-            val relativeZIdx = zIdx - peakZIndex
-            val adjustedZIdx = if (relativeZIdx < 0) relativeZIdx + DEPTH_COUNT else relativeZIdx
-            val zNorm = adjustedZIdx.toDouble() / (DEPTH_COUNT - 1).coerceAtLeast(1)
-            val half = concept.waveWidth / 2
-            val xNorm = if (half > 0) xIdx.toDouble() / half.toDouble() else 0.0
 
-            val sinComponentRaw = sin(WAVE_FREQUENCY * zNorm * Math.PI - t)
-            val expDecay = exp(-WAVE_DECAY * zNorm * 3.0)
-            val curlEffect = 1.0 + CURL_INTENSITY * (xNorm * xNorm) * (1.0 - zNorm)
-            val crestFactor = if (sinComponentRaw > 0) sinComponentRaw * sinComponentRaw else 0.0
-            val yHeight = concept.waveAmplitude * sinComponentRaw * expDecay * curlEffect * (0.85 + 0.15 * crestFactor)
-            val forwardCurl = crestFactor * (1.0 - zNorm) * 0.45 + (zNorm * zNorm * 0.15 * sin(Math.PI * zNorm + t * 0.4))
+            val xNorm = if (half > 0) xIdx.toDouble() / half.toDouble() else 0.0
+            val zNorm = zIdx.toDouble() / (DEPTH_COUNT - 1).coerceAtLeast(1)
+
+            val heightFactor = (1.0 - zNorm).coerceAtLeast(0.0)
+            val widthFactor = (1.0 - kotlin.math.abs(xNorm) * 0.25).coerceAtLeast(0.0)
+            val yHeight = concept.waveAmplitude * heightFactor * widthFactor
+
+            val forwardSkew = yHeight * 0.35
             val xSpread = (xIdx * spacing + centerBias)
-            val zOffset = (relativeZIdx - peakZIndex) * 0.35 + forwardCurl
-            val noiseY = sin(xIdx * 2.7 + zIdx * 1.3) * 0.06
+            val zOffset = -zIdx * 0.4 + forwardSkew
 
             val target = base.clone()
                 .add(right.clone().multiply(xSpread))
-                .add(0.0, yHeight + noiseY, 0.0)
+                .add(0.0, yHeight, 0.0)
                 .add(forwardNorm.clone().multiply(zOffset))
-            piece.display.teleport(target)
 
-            if (crestFactor > 0.65 && Math.random() < CREST_FOAM_CHANCE) {
-                runCatching {
-                    when ((Math.random() * 3).toInt()) {
-                        0 -> piece.display.block = Material.WHITE_CONCRETE.createBlockData()
-                        1 -> piece.display.block = Material.LIGHT_BLUE_CONCRETE.createBlockData()
-                        else -> piece.display.block = Material.WHITE_STAINED_GLASS.createBlockData()
-                    }
-                }
-            }
-            if (crestFactor > 0.7 && tick % 2 == 0) {
-                piece.display.world.spawnParticle(Particle.CLOUD, target.clone().add(0.0,0.15,0.0),1,0.12,0.08,0.12,0.0)
-                piece.display.world.spawnParticle(Particle.WATER_SPLASH, target,1,0.08,0.05,0.08,0.0)
-            }
+            piece.display.teleport(target)
         }
     }
 
@@ -331,6 +294,7 @@ class AbilityWaveRider : ActiveAbility<AbilityConceptWaveRider>(), Listener {
             fallImmune = true // 튀어 오르는 순간부터 착지 전까지 면역
             player.world.playSound(player.location, Sound.ENTITY_DOLPHIN_JUMP,1f,1.0f)
             player.world.spawnParticle(Particle.WATER_SPLASH, player.location, 25, 1.2,0.4,1.2,0.05)
+            playWaveDebris(direction.clone())
             stopWave()
         }
     }
@@ -364,25 +328,28 @@ class AbilityWaveRider : ActiveAbility<AbilityConceptWaveRider>(), Listener {
         player.velocity = player.velocity.apply { y = UPWARD_VELOCITY * 0.85 }
         fallImmune = true
 
-        // 파편(디스플레이) 비산 애니메이션 준비
+        playWaveDebris(direction.clone())
+    }
+
+    private fun playWaveDebris(forward: Vector) {
+        val forwardNorm = forward.apply { y = 0.0 }.normalize()
+        if (forwardNorm.lengthSquared() == 0.0) return
+
         data class Flying(
             val piece: WavePiece,
             var vel: Vector
         )
         val flying = mutableListOf<Flying>()
-        val centerVec = crashCenter.toVector()
         val rand = java.util.concurrent.ThreadLocalRandom.current()
 
         for (piece in wavePieces) {
-            val loc = piece.display.location
-            val dir = loc.toVector().subtract(centerVec).apply { if (lengthSquared() < 0.0001) x = 0.001 }.normalize()
-            val hSpeed = EXPLOSION_HORIZONTAL * 0.6 * (0.55 + rand.nextDouble() * 0.5) // 더 낮춤
-            val up = EXPLOSION_UPWARD * 0.55 * (0.6 + rand.nextDouble() * 0.5)
-            val vel = dir.multiply(hSpeed).add(Vector(0.0, up, 0.0))
+            val hSpeed = 0.45 + rand.nextDouble() * 0.35
+            val up = 0.25 + rand.nextDouble() * 0.25
+            val vel = forwardNorm.clone().multiply(hSpeed).add(Vector(0.0, up, 0.0))
             flying += Flying(piece, vel)
         }
 
-        // 원본 리스트는 후처리 위해 유지, 애니메이션 끝나면 제거
+        sinkTask?.cancel(); sinkTask = null
         sinkTask = psychic.runTaskTimer(object : Runnable {
             var life = 0
             override fun run() {
@@ -390,20 +357,20 @@ class AbilityWaveRider : ActiveAbility<AbilityConceptWaveRider>(), Listener {
                 var aliveAny = false
                 flying.forEach { f ->
                     val d = f.piece.display
+                    if (!d.isValid || d.isDead) return@forEach
+
                     val l = d.location
-                    // 중력 및 감속
-                    f.vel.y -= EXPLOSION_GRAVITY * 0.9
-                    f.vel.x *= EXPLOSION_FRICTION * 0.92
-                    f.vel.z *= EXPLOSION_FRICTION * 0.92
+                    f.vel.y -= 0.07
+                    f.vel.x *= 0.95
+                    f.vel.z *= 0.95
                     val newLoc = l.clone().add(f.vel)
-                    // 지면 충돌 검사 (새 위치 바로 아래 블록이 단단하면 제거)
                     val below = newLoc.clone().add(0.0, -0.35, 0.0).block
-                    if (below.type.isSolid || below.type == Material.WATER || life > 32) {
-                        d.world.spawnParticle(Particle.WATER_SPLASH, newLoc, 6, 0.25,0.18,0.25,0.04)
+                    if (below.type.isSolid || below.type == Material.WATER || life > 26) {
+                        d.world.spawnParticle(Particle.WATER_SPLASH, newLoc, 4, 0.2,0.12,0.2,0.03)
                         d.remove()
                     } else {
                         d.teleport(newLoc)
-                        if (life % 4 == 0) d.world.spawnParticle(Particle.FALLING_WATER, newLoc, 1, 0.04,0.04,0.04,0.0)
+                        if (life % 4 == 0) d.world.spawnParticle(Particle.FALLING_WATER, newLoc, 1, 0.03,0.03,0.03,0.0)
                         aliveAny = true
                     }
                 }

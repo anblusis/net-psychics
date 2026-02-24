@@ -32,7 +32,7 @@ class AbilityConceptEruption : AbilityConcept() {
     val explosionRange = 3.0
 
     @Config
-    val blockExplosionChance = 0.15
+    val blockExplosionChance = 0.25
 
     @Config
     val explosionFireChance = 0.33
@@ -63,7 +63,7 @@ class AbilityConceptEruption : AbilityConcept() {
         castingTime = 3000L
         range = 64.0
         knockback = 0.8
-        damage = Damage.of(DamageType.BLAST, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 7.0))
+        damage = Damage.of(DamageType.BLAST, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 10.0))
         description = listOf(
             text("바라보는 방향에 지면을 파괴하는 폭발을 일으킵니다."),
             text("파괴된 블럭들은 날아가서 2차 폭발을 가합니다.")

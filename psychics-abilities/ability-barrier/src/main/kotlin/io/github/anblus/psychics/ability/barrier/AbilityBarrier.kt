@@ -28,7 +28,7 @@ import java.util.*
 class AbilityConceptBarrier : AbilityConcept() {
 
     @Config
-    val manaPerMeter = 10
+    val manaPerMeter = 5
 
     @Config
     val interval = 4.0
@@ -39,7 +39,7 @@ class AbilityConceptBarrier : AbilityConcept() {
         cooldownTime = 500L
         durationTime = 5000L
         range = 24.0
-        damage = Damage.of(DamageType.MELEE, EsperAttribute.ATTACK_DAMAGE to 5.0)
+        damage = Damage.of(DamageType.MELEE, EsperAttribute.ATTACK_DAMAGE to 2.0)
         description = listOf(
             text("능력을 처음 사용 하였을 때 바라본 위치를 기준으로"),
             text("능력을 다시 사용 하였을 때 바라본 위치까지 연결 되는"),
@@ -118,16 +118,16 @@ class AbilityBarrier : ActiveAbility<AbilityConceptBarrier>(), Listener {
                         player.sendActionBar("필요 마나양 ${(distance * concept.manaPerMeter).toInt()}")
                         val interval = concept.interval / 10
                         TrailSupport.trail(firstLoc, firstLoc.clone().add(0.0, distance, 0.0), interval) { w, x, y, z ->
-                            w.spawnParticle(Particle.COMPOSTER, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
+                            player.spawnParticle(Particle.COMPOSTER, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
                         }
                         TrailSupport.trail(firstLoc, secondLoc, interval) { w, x, y, z ->
-                            w.spawnParticle(Particle.COMPOSTER, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
+                            player.spawnParticle(Particle.COMPOSTER, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
                         }
                         TrailSupport.trail(firstLoc.clone().add(0.0, distance, 0.0), secondLoc.clone().add(0.0, distance, 0.0), interval) { w, x, y, z ->
-                            w.spawnParticle(Particle.COMPOSTER, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
+                            player.spawnParticle(Particle.COMPOSTER, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
                         }
                         TrailSupport.trail(secondLoc, secondLoc.clone().add(0.0, distance, 0.0), interval) { w, x, y, z ->
-                            w.spawnParticle(Particle.COMPOSTER, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
+                            player.spawnParticle(Particle.COMPOSTER, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
                         }
                     }
                 }

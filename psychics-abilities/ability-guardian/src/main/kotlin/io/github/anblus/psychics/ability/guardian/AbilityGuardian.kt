@@ -6,10 +6,14 @@ import io.github.monun.psychics.ActiveAbility
 import io.github.monun.psychics.Channel
 import io.github.monun.psychics.attribute.EsperAttribute
 import io.github.monun.psychics.attribute.EsperStatistic
+import io.github.monun.psychics.tooltip.TooltipBuilder
+import io.github.monun.psychics.tooltip.stats
 import io.github.monun.psychics.util.friendlyFilter
+import io.github.monun.tap.config.Config
 import io.github.monun.tap.config.Name
 import io.github.monun.tap.trail.TrailSupport
 import net.kyori.adventure.text.Component.text
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Material
 import org.bukkit.Particle
@@ -30,14 +34,22 @@ import kotlin.math.sqrt
 @Name("guardian")
 class AbilityConceptGuardian : AbilityConcept() {
 
+    @Config
+    val defaultHealing = 0.9
+
+    @Config
+    val healCoefficient = EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 0.1)
+
+    @Config
+    val guardianHealth = 10.0
+
     init {
         displayName = "수호자"
         type = AbilityType.ACTIVE
         cooldownTime = 10000L
-        cost = 60.0
+        cost = 50.0
         range = 16.0
         castingTime = 2000L
-        healing = EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 1.0)
         description = listOf(
             text("능력 발동시 현재 위치에 주위의 아군을"),
             text("지원하는 가디언을 소환합니다."),
@@ -45,6 +57,12 @@ class AbilityConceptGuardian : AbilityConcept() {
         )
         wand = ItemStack(Material.PRISMARINE_SHARD)
     }
+
+    override fun onRenderTooltip(tooltip: TooltipBuilder, stats: (EsperStatistic) -> Double) {
+        tooltip.stats(defaultHealing + stats(healCoefficient)) { NamedTextColor.GREEN to "치유량" to "" }
+        tooltip.stats(guardianHealth) { NamedTextColor.RED to "가디언 체력" to "" }
+    }
+
 
 }
 
@@ -103,7 +121,9 @@ class AbilityGuardian : ActiveAbility<AbilityConceptGuardian>(), Listener {
                                         w.spawnParticle(Particle.COMPOSTER, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
                                     }
                                     world.playSound(entity.location, Sound.BLOCK_BEACON_DEACTIVATE, 2.0F, 2.0F)
-                                    entity.psychicHeal()
+                                    entity.psychicHeal(
+                                        concept.defaultHealing + esper.getStatistic(concept.healCoefficient)
+                                    )
                                     entity.addPotionEffect(
                                         PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 40, 0, false, false, false)
                                     )
@@ -130,7 +150,8 @@ class AbilityGuardian : ActiveAbility<AbilityConceptGuardian>(), Listener {
         guardian = player.world.spawnEntity(location, EntityType.GUARDIAN) as LivingEntity
         guardian?.let { guardian ->
             guardian.setAI(false)
-            guardian.maxHealth = 0.1
+            guardian.maxHealth = concept.guardianHealth
+            guardian.health = concept.guardianHealth
             guardian.customName = "${esper.player.name}님의 수호자"
         }
     }

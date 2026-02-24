@@ -46,16 +46,16 @@ class AbilityConceptPhantomRider : AbilityConcept() {
     @Config var dashRange = 10.0
     @Config var dashSpeed = 30.0
     @Config var normalSpeed = 10.0
-    @Config var dashKnockback = 1.5
     @Config var phantomBaseHealth = 10.0
     @Config var phantomEsperStatisticHealth = EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 5.0)
 
     init {
         displayName = "팬텀 라이더"
         type = AbilityType.ACTIVE
-        cost = 35.0
+        cost = 30.0
         cooldownTime = 10000L
         damage = Damage.of(DamageType.MELEE, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 2.0))
+        knockback = 1.5
         description = listOf(
             text("팬텀에 탑승하여 바라보는 방향으로 비행합니다."),
             text("탑승 중 능력을 재사용 시 전방으로 돌진합니다."),
@@ -249,7 +249,7 @@ class AbilityPhantomRider : Ability<AbilityConceptPhantomRider>(), Listener {
             .filter { it != mount && it != phantom && TargetFilter(player).test(it) && it !in damagedEntities }
             .forEach { targetEnt ->
                 damagedEntities.add(targetEnt)
-                targetEnt.psychicDamage(knockbackLocation = mount.location, knockback = concept.dashKnockback)
+                targetEnt.psychicDamage(knockbackLocation = mount.location, knockback = concept.knockback)
                 targetEnt.world.spawnParticle(Particle.CRIT, targetEnt.eyeLocation, 16, 0.4, 0.4, 0.4, 0.05)
             }
 

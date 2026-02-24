@@ -266,8 +266,6 @@ class AbilityStormBreaker : Ability<AbilityConceptStormBreaker>() {
                     1.0,
                     filter,
                 )?.let { rayTraceResult ->
-                    durationTime = concept.durationTime
-
                     val hitLocation = rayTraceResult.hitPosition.toLocation(world)
                     axe?.let { axe ->
                         this.axe = null

@@ -44,7 +44,7 @@ class AbilityConceptIllusionBeam : AbilityConcept() {
     init {
         displayName = "환상빔"
         type = AbilityType.ACTIVE
-        cost = 15.0
+        cost = 8.0
         cooldownTime = 1000L
         castingTime = 500L
         range = 128.0

@@ -24,8 +24,8 @@ import kotlin.math.*
 
 @Name("earthquake")
 class AbilityConceptEarthquake : AbilityConcept() {
-    @Config var fanAngleDeg = 20.0           // 부채꼴 각도(전체)
-    @Config var maxBlastResistance = 6.0     // 이 값 이하만 들어올림
+    @Config var fanAngleDeg = 30.0           // 부채꼴 각도(전체)
+    @Config var maxBlastResistance = 10.0     // 이 값 이하만 들어올림
     @Config var ringDelayPerBlock = 1.5      // 중심에서 1블록당 지연(틱)
     @Config var liftBaseVelocity = 0.6       // 블록 상승 기본 속도(Y)
     @Config var horizontalJitter = 0.0      // 블록 수평 흔들림
@@ -36,8 +36,8 @@ class AbilityConceptEarthquake : AbilityConcept() {
     init {
         displayName = "지진"
         type = AbilityType.ACTIVE
-        cost = 40.0
-        cooldownTime = 6000L
+        cost = 30.0
+        cooldownTime = 10000L
         range = 15.0
         damage = Damage.of(DamageType.BLAST, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 1.0))
         description = listOf(

@@ -51,7 +51,7 @@ class AbilityConceptFlamethrower : AbilityConcept() {
         cost = 10.0
         range = 12.0
         cooldownTime = 1000L
-        damage = Damage.of(DamageType.FIRE, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 0.25))
+        damage = Damage.of(DamageType.FIRE, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 0.2))
         description = listOf(
             text("바라보는 방향으로 상대를 불태우는 투사체를 방사합니다."),
             text("매 초 마나를 소비하고 사용 중에 좌클릭을 누르거나"),
@@ -59,7 +59,6 @@ class AbilityConceptFlamethrower : AbilityConcept() {
             text("사용 중엔 구속이 걸립니다.")
         )
         wand = ItemStack(Material.REPEATER)
-
     }
 
 }

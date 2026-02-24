@@ -37,10 +37,10 @@ class AbilityConceptElectricShockWave : AbilityConcept() {
     val maxReaction = 10
 
     @Config
-    val reactionIntervalTick = 20
+    val reactionIntervalTick = 15
 
     @Config
-    val waveThickness = 0.4
+    val waveThickness = 0.8
 
     @Config
     val secondRange = 8.0

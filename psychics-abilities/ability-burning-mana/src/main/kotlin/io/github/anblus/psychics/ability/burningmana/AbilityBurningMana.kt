@@ -3,8 +3,10 @@ package io.github.anblus.psychics.ability.burningmana
 import io.github.monun.psychics.AbilityConcept
 import io.github.monun.psychics.AbilityType
 import io.github.monun.psychics.ActiveAbility
+import io.github.monun.psychics.TestResult
 import io.github.monun.psychics.attribute.EsperStatistic
 import io.github.monun.psychics.tooltip.TooltipBuilder
+import io.github.monun.psychics.tooltip.stats
 import io.github.monun.psychics.util.hostileFilter
 import io.github.monun.tap.config.Config
 import io.github.monun.tap.config.Name
@@ -22,7 +24,10 @@ import org.bukkit.inventory.ItemStack
 class AbilityConceptBurningMana : AbilityConcept() {
 
     @Config
-    val fireSecondPerOneMana = 0.1
+    val fireSecondPerOneMana = 0.15
+
+    @Config
+    val minCost = 10.0
 
     init {
         displayName = "마나 태우기"
@@ -38,12 +43,8 @@ class AbilityConceptBurningMana : AbilityConcept() {
     }
 
     override fun onRenderTooltip(tooltip: TooltipBuilder, stats: (EsperStatistic) -> Double) {
-        tooltip.header(
-            text().color(NamedTextColor.DARK_RED).content("마나당 화염 시간 ").decorate(TextDecoration.BOLD)
-                .decoration(TextDecoration.ITALIC, false)
-                .append(text().color(NamedTextColor.WHITE).content(fireSecondPerOneMana.toDouble().toString()))
-                .append(text().color(NamedTextColor.WHITE).content(" 초")).build()
-        )
+        tooltip.stats(minCost) { NamedTextColor.DARK_AQUA to "최소 마나 소모량" to "" }
+        tooltip.stats(fireSecondPerOneMana) { NamedTextColor.DARK_RED to "마나당 화염 시간" to "초" }
     }
 }
 
@@ -69,9 +70,14 @@ class AbilityBurningMana : ActiveAbility<AbilityConceptBurningMana>(), Listener 
     override fun onCast(event: PlayerEvent, action: WandAction, target: Any?) {
         if (target !is LivingEntity) return
 
+        if (psychic.mana < concept.minCost) {
+            esper.player.sendMessage(TestResult.FailedCost.message(this))
+            return
+        }
+
         val mana = psychic.mana
         psychic.mana = 0.0
-        target.fireTicks += ((mana * concept.fireSecondPerOneMana) * 20).toInt()
+        target.fireTicks += 20 + ((mana * concept.fireSecondPerOneMana) * 20).toInt()
         cooldownTime = concept.cooldownTime
         target.world.spawnParticle(Particle.LAVA, target.location, 16, 0.4, 1.0, 0.4, 0.0)
         target.world.playSound(

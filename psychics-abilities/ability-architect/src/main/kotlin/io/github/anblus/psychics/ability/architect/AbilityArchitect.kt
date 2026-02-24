@@ -10,6 +10,7 @@ import io.github.monun.psychics.tooltip.TooltipBuilder
 import io.github.monun.psychics.tooltip.stats
 import io.github.monun.tap.config.Config
 import io.github.monun.tap.config.Name
+import io.github.monun.tap.config.RangeDouble
 import io.github.monun.tap.fake.FakeEntity
 import io.github.monun.tap.math.toRadians
 import io.github.monun.tap.task.TickerTask
@@ -40,22 +41,22 @@ class AbilityConceptArchitect : AbilityConcept() {
     val maxCost = 50.0
 
     @Config
-    val maxChargeTick = 100
+    val maxChargeTick = 80
 
     @Config
-    val cubeRange = 16.0
+    val cubeRange = 64.0
 
     @Config
     val buildingMaterial = Material.OAK_PLANKS
 
     @Config
-    val narrowLongBridgeMaxLength = 35.0
+    val narrowLongBridgeMaxLength = 40.0
 
     @Config
-    val wideShortBridgeMaxLength = 15.0
+    val wideShortBridgeMaxLength = 20.0
 
     @Config
-    val cubeMaxRadius = 7.0
+    val cubeMaxRadius = 8.0
 
     @Config
     val buildingWaitBlockInterval = 10.0
@@ -65,6 +66,13 @@ class AbilityConceptArchitect : AbilityConcept() {
 
     @Config
     val maxBuildingEfficiency = 3.0
+
+    @Config
+    val minCost = 5.0
+
+    @Config
+    @RangeDouble(0.0, 1.0)
+    val defaultBuildingEfficiency = 0.5
 
     init {
         displayName = "건축"
@@ -87,7 +95,7 @@ class AbilityConceptArchitect : AbilityConcept() {
     override fun onRenderTooltip(tooltip: TooltipBuilder, stats: (EsperStatistic) -> Double) {
         tooltip.stats(maxCost) { NamedTextColor.DARK_AQUA to "최대 마나 소모" to null }
         tooltip.stats(maxChargeTick / 20.0) { NamedTextColor.BLUE to "최대 준비 시간" to "초" }
-        tooltip.stats(stats(EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 1.0)).coerceAtMost(maxBuildingEfficiency)) { NamedTextColor.LIGHT_PURPLE to "최대 크기 배수" to "배" }
+        tooltip.stats((defaultBuildingEfficiency + stats(EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 1.0 - defaultBuildingEfficiency))).coerceAtMost(maxBuildingEfficiency)) { NamedTextColor.LIGHT_PURPLE to "최대 크기 배수" to "배" }
     }
 }
 
@@ -135,8 +143,8 @@ class AbilityArchitect : Ability<AbilityConceptArchitect>(), Listener {
             chargingTotalTick ++
 
             val percent = chargingTotalTick.toDouble() / concept.maxChargeTick
-            val cost = percent * concept.maxCost
-            val multiple = esper.getStatistic(EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 1.0)).coerceAtMost(concept.maxBuildingEfficiency)
+            val cost = (percent * concept.maxCost).coerceAtLeast(concept.minCost)
+            val multiple = (concept.defaultBuildingEfficiency + esper.getStatistic(EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 1.0 - concept.defaultBuildingEfficiency))).coerceAtMost(concept.maxBuildingEfficiency)
 
             worker?.let { worker ->
                 worker.updateMetadata {
@@ -158,7 +166,9 @@ class AbilityArchitect : Ability<AbilityConceptArchitect>(), Listener {
                 2 -> concept.cubeMaxRadius / concept.maxChargeTick * chargingTotalTick * multiple
                 else -> 0.0
             }
-            if (cost >= psychic.mana || chargingTotalTick >= concept.maxChargeTick) startBuild()
+            if (cost >= psychic.mana || chargingTotalTick >= concept.maxChargeTick) {
+                startBuild()
+            }
         }
     }
 
@@ -175,7 +185,8 @@ class AbilityArchitect : Ability<AbilityConceptArchitect>(), Listener {
         player.world.playSound(worker!!.location, Sound.UI_STONECUTTER_TAKE_RESULT, 2.0f, 0.1f)
         worker?.remove()
 
-        psychic.mana -= chargingTotalTick.toDouble() / concept.maxChargeTick * concept.maxCost
+        val cost = (chargingTotalTick.toDouble() / concept.maxChargeTick * concept.maxCost).coerceAtLeast(concept.minCost)
+        psychic.mana -= cost
 
         isCharging = false
         isBuilding = true
@@ -306,10 +317,10 @@ class AbilityArchitect : Ability<AbilityConceptArchitect>(), Listener {
                         return
                     }
 
-                    if (psychic.mana < concept.maxCost / concept.maxChargeTick * 10) {
+                    if (psychic.mana < concept.minCost) {
                         player.sendActionBar(text("최소 마나가 필요합니다").decorate(TextDecoration.BOLD)
                             .append(space())
-                            .append(text(concept.maxCost / concept.maxChargeTick * 10)))
+                            .append(text(concept.minCost)))
                         return
                     }
 

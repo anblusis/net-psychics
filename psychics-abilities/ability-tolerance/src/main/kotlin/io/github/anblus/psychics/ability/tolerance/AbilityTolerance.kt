@@ -37,7 +37,7 @@ class AbilityConceptTolerance : AbilityConcept() {
     val damageMultipleFromTeam = 0.5
 
     @Config
-    val damageMultiple = 0.5
+    val receiveDamageMultiple = 0.4
 
     @Config
     val attackMultiple = 0.5
@@ -59,7 +59,7 @@ class AbilityConceptTolerance : AbilityConcept() {
 
     override fun onRenderTooltip(tooltip: TooltipBuilder, stats: (EsperStatistic) -> Double) {
         tooltip.stats(damageMultipleFromTeam) { NamedTextColor.GREEN to "아군 피해" to "배" }
-        tooltip.stats(damageMultiple) { NamedTextColor.GOLD to "받는 피해" to "배" }
+        tooltip.stats(receiveDamageMultiple) { NamedTextColor.GOLD to "받는 피해" to "배" }
         tooltip.stats(attackMultiple) { NamedTextColor.RED to "주는 피해" to "배" }
     }
 }
@@ -149,7 +149,7 @@ class AbilityTolerance : ActiveAbility<AbilityConceptTolerance>(), Listener {
         val player = esper.player
 
         if (entity == player) {
-            if (durationTime > 0) event.damage *= concept.damageMultiple
+            if (durationTime > 0) event.damage *= concept.receiveDamageMultiple
         } else {
             if (player.isValid) {
                 event.damage *= concept.damageMultipleFromTeam
@@ -157,7 +157,7 @@ class AbilityTolerance : ActiveAbility<AbilityConceptTolerance>(), Listener {
                 if (event.damager is Player) {
                     player.killer = event.damager as Player
                 }
-                player.damage(damage * (1.0 - concept.damageMultipleFromTeam) * concept.damageMultiple)
+                player.damage(damage * (1.0 - concept.damageMultipleFromTeam) * concept.receiveDamageMultiple)
 
                 val world = entity.world
                 val from = entity.boundingBox.center.toLocation(world)

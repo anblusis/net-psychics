@@ -55,7 +55,7 @@ class AbilityConceptElectrician : AbilityConcept() {
     val powerGenerationRange = 6.0
 
     @Config
-    val powerGenerationDamage = Damage.of(DamageType.BLAST, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 4.0))
+    val powerGenerationDamage = Damage.of(DamageType.BLAST, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 5.0))
 
     @Config
     val powerGenerationKnockback = 0.6

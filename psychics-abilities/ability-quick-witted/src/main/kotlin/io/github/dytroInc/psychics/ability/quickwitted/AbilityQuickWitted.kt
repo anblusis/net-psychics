@@ -4,7 +4,9 @@ import io.github.monun.psychics.AbilityConcept
 import io.github.monun.psychics.ActiveAbility
 import io.github.monun.psychics.attribute.EsperStatistic
 import io.github.monun.psychics.tooltip.TooltipBuilder
+import io.github.monun.tap.config.Config
 import io.github.monun.tap.config.Name
+import io.github.monun.tap.task.TickerTask
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
@@ -17,19 +19,43 @@ import org.bukkit.event.player.PlayerEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import org.bukkit.scheduler.BukkitRunnable
 import kotlin.random.Random.Default.nextInt
+import kotlin.random.Random.Default.nextDouble
 
-// 수학 문제 맞추면 효과 II 주는 능력
 @Name("quick-witted")
 class AbilityConceptQuickWitted : AbilityConcept() {
+
+    @Config
+    val speedStartDifficulty = 1
+
+    @Config
+    val speedMaxAmplifier = 1
+
+    @Config
+    val speedAmplifierUpDifficultyInterval = 4
+
+    @Config
+    val resistanceStartDifficulty = 9
+
+    @Config
+    val resistanceMaxAmplifier = 1
+
+    @Config
+    val resistanceAmplifierUpDifficultyInterval = 3
+
+    @Config
+    val saturationStartDifficulty = 15
+
+    @Config
+    val answerTimeLimitTicks = 300L
+
     init {
-        cooldownTime = 50000L
+        cooldownTime = 1000L
         durationTime = 30000L
         description = listOf(
-            text("발동하면 랜덤 수학 문제가 나옵니다."),
-            text("문제를 마인크래프트 채팅으로 답합니다."),
-            text("종류에 따라 얻는 버프도 다릅니다.")
+            text("능력 사용 시 무작위 수학 문제가 나옵니다."),
+            text("수학 문제를 연달아 맞힐수록 난이도가 올라갑니다."),
+            text("난이도가 높은 문제를 풀수록 강한 버프를 받습니다.")
         )
         wand = ItemStack(Material.PAPER)
         displayName = "두뇌 회전"
@@ -37,7 +63,7 @@ class AbilityConceptQuickWitted : AbilityConcept() {
 
     override fun onRenderTooltip(tooltip: TooltipBuilder, stats: (EsperStatistic) -> Double) {
         tooltip.header(
-            text().color(NamedTextColor.DARK_AQUA).content("덧셈 & 뺄셈 ").decoration(TextDecoration.ITALIC, false)
+            text().color(NamedTextColor.DARK_AQUA).content("난이도 1~").decoration(TextDecoration.ITALIC, false)
                 .decorate(
                     TextDecoration.BOLD
                 )
@@ -46,20 +72,20 @@ class AbilityConceptQuickWitted : AbilityConcept() {
                 ).build()
         )
         tooltip.header(
-            text().color(NamedTextColor.DARK_AQUA).content("곱셈 & 나눗셈 ").decoration(TextDecoration.ITALIC, false)
+            text().color(NamedTextColor.DARK_AQUA).content("난이도 9~").decoration(TextDecoration.ITALIC, false)
                 .decorate(
                     TextDecoration.BOLD
                 )
                 .append(
-                    text().color(NamedTextColor.AQUA).content("포화")
+                    text().color(NamedTextColor.AQUA).content("저항")
                 ).build()
         )
         tooltip.header(
-            text().color(NamedTextColor.DARK_AQUA).content("1차 방정식 ").decoration(TextDecoration.ITALIC, false).decorate(
+            text().color(NamedTextColor.DARK_AQUA).content("난이도 15~").decoration(TextDecoration.ITALIC, false).decorate(
                 TextDecoration.BOLD
             )
                 .append(
-                    text().color(NamedTextColor.AQUA).content("저항")
+                    text().color(NamedTextColor.AQUA).content("포화")
                 ).build()
         )
     }
@@ -68,118 +94,185 @@ class AbilityConceptQuickWitted : AbilityConcept() {
 class AbilityQuickWitted : ActiveAbility<AbilityConceptQuickWitted>(), Listener {
     companion object {
         fun createProblem(difficulty: Int): MathProblem {
-            var currentDifficulty = 0
-            var expression = ""
-            var result = nextInt(1, 10)
-            val operations = mutableListOf<String>()
-
-            while (currentDifficulty < difficulty) {
-                val operationType = nextInt(4) // 0: 덧셈, 1: 뺄셈, 2: 곱셈, 3: 나눗셈
-                val operand = nextInt(1, 10)
-                when (operationType) {
-                    0 -> { // 덧셈
-                        operations.add(" + $operand")
-                        currentDifficulty += 1
-                    }
-
-                    1 -> { // 뺄셈
-                        operations.add(" - $operand")
-                        currentDifficulty += 1
-                    }
-
-                    2 -> { // 곱셈
-                        operations.add(" * $operand")
-                        currentDifficulty += 2
-                    }
-
-                    3 -> { // 나눗셈
-                        operations.add(" / $operand")
-                        currentDifficulty += 2
-                    }
-                }
-
-                // 난이도가 높아지면 괄호 추가
-                if (currentDifficulty > 5 && nextInt(4) == 0 && operations.isNotEmpty()) {
-                    val openIndex = nextInt(operations.size)
-                    operations.add(openIndex, "(")
-                    operations.add(")") // 괄호 끝을 항상 현재 식의 끝부분에 고정
-                }
-            }
-
-            expression = "x" + operations.joinToString("")
-            result = evalExpression(expression.replace("x", result.toString()))
-
+            val expression = generateExpression(difficulty.coerceAtLeast(0), 0)
             return MathProblem(
-                MathProblems.getByDifficulty(currentDifficulty),
-                "$expression = ?",
-                result
+                MathProblems.getByDifficulty(difficulty),
+                "${expression.text} = ?",
+                expression.value
             )
         }
 
-        private fun evalExpression(expression: String): Int {
-            return try {
-                val engine = javax.script.ScriptEngineManager().getEngineByName("JavaScript")
-                engine.eval(expression).toString().toInt()
-            } catch (e: Exception) {
-                0
+        private fun generateExpression(difficulty: Int, depth: Int): GeneratedExpression {
+            val baseTermCount = 2 + (difficulty / 6)
+            val extraTerms = nextInt(0, ((difficulty+5) / 5).coerceAtMost(3))
+            val termCount = (baseTermCount + extraTerms - depth).coerceAtLeast(2)
+            val parenChance = ((difficulty * 0.02) - (extraTerms * 0.1)).coerceAtMost(0.5)
+            val termMaxValue = (5 + difficulty).coerceAtMost(50)
+
+            val terms = mutableListOf<GeneratedTerm>()
+            repeat(termCount) {
+                val useParen = depth < 2 && nextDouble() < parenChance
+                if (useParen) {
+                    val innerDifficulty = (difficulty / 2).coerceAtLeast(0)
+                    val inner = generateExpression(innerDifficulty, depth + 1)
+                    terms.add(GeneratedTerm("(${inner.text})", inner.value))
+                } else {
+                    val value = nextInt(1, termMaxValue + 1)
+                    terms.add(GeneratedTerm(value.toString(), value))
+                }
             }
+
+
+
+            var expressionText = terms.first().text
+            var totalValue = terms.first().value.toLong()
+            var lastTerm = terms.first().value.toLong()
+            for (i in 1 until terms.size) {
+                val term = terms[i]
+                val op = pickOperator(difficulty, totalValue, term.value)
+                expressionText += " $op ${term.text}"
+                when (op) {
+                    "+" -> {
+                        totalValue += term.value
+                        lastTerm = term.value.toLong()
+                    }
+                    "-" -> {
+                        totalValue -= term.value
+                        lastTerm = -term.value.toLong()
+                    }
+                    else -> {
+                        val multiplied = lastTerm * term.value
+                        totalValue = totalValue - lastTerm + multiplied
+                        lastTerm = multiplied
+                    }
+                }
+            }
+
+            return GeneratedExpression(
+                expressionText,
+                totalValue.coerceIn(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong()).toInt()
+            )
         }
+
+        private fun pickOperator(difficulty: Int, lhsValue: Long, rhsValue: Int): String {
+            val lhsAbs = kotlin.math.abs(lhsValue)
+            val rhsAbs = kotlin.math.abs(rhsValue.toLong())
+            val magnitude = kotlin.math.max(lhsAbs, rhsAbs)
+
+            val penalty = if (magnitude < 20) 0
+                else (magnitude / 10).toInt() - 1
+
+            val operators = mutableListOf("+")
+            if (difficulty >= 4) operators.add("-")
+
+            val baseMultiplyWeight = when {
+                difficulty < 8 -> 0
+                difficulty < 12 -> 1
+                else -> difficulty / 6
+            }
+
+            val multiplyWeight = (baseMultiplyWeight - penalty).coerceAtLeast(0)
+            repeat(multiplyWeight) { operators.add("*") }
+
+            return operators[nextInt(operators.size)]
+        }
+
+        private data class GeneratedTerm(val text: String, val value: Int)
+        private data class GeneratedExpression(val text: String, val value: Int)
     }
 
     override fun onEnable() {
         psychic.registerEvents(this)
     }
 
-    var currentProblem: MathProblem? = null
+    private var currentProblem: MathProblem? = null
+    private var currentDifficulty = 0
+    private var currentProblemTimeoutTask: TickerTask? = null
 
     override fun onCast(event: PlayerEvent, action: WandAction, target: Any?) {
         val player = event.player
         if (currentProblem != null) return player.sendActionBar(text("문제를 먼저 풀어야합니다.", NamedTextColor.RED))
-        cooldownTime = concept.cooldownTime
-        psychic.consumeMana(concept.cost)
-        createProblem().let {
+
+        exhaust()
+
+        val answerTimeLimitTime = concept.answerTimeLimitTicks / 20 + currentDifficulty / 3
+
+        createProblem(currentDifficulty).let {
             currentProblem = it
             player.sendMessage(
                 text().color(NamedTextColor.GOLD).content("문제: ").decorate(TextDecoration.BOLD)
                     .append(
                         text().color(NamedTextColor.WHITE).content(it.question).decoration(TextDecoration.BOLD, false)
                     )
+                    .append(
+                        text().color(NamedTextColor.GRAY)
+                            .content(" (제한 시간: ${answerTimeLimitTime}s, 난이도: $currentDifficulty)")
+                            .decoration(TextDecoration.BOLD, false)
+                    )
                     .build()
             )
         }
+        currentProblemTimeoutTask?.cancel()
+        currentProblemTimeoutTask = psychic.runTask({
+            if (currentProblem != null) {
+                player.sendMessage(text("시간 초과! 난이도가 초기화됩니다.", NamedTextColor.RED))
+                currentProblem = null
+                currentDifficulty = 0
+            }
+        }, answerTimeLimitTime * 20)
     }
 
     @EventHandler
     fun onAnswer(event: AsyncChatEvent) {
-        println(event.player.name)
         val message = PlainTextComponentSerializer.plainText().serialize(event.message())
-        println(message)
-        message.toIntOrNull()?.let {
+        message.toIntOrNull()?.let { answer ->
             currentProblem?.let { problem ->
+                event.isCancelled = true
+
                 val player = event.player
-                if (problem.answer == it) {
-                    player.sendMessage(text("정답을 맞췄습니다!", NamedTextColor.GREEN))
-                    psychic.runTask(object : BukkitRunnable() {
-                        override fun run() {
-                            player.addPotionEffect(
-                                PotionEffect(
-                                    problem.problem.effectType, (concept.durationTime / 50.0).toInt(), 1
-                                ) // 효과 2만큼 주기
-                            )
-                        }
+                currentProblemTimeoutTask?.cancel()
+                currentProblemTimeoutTask = null
+                if (problem.answer == answer) {
+                    currentDifficulty += 1
+                    player.sendMessage(text("정답을 맞췄습니다! (현재 난이도: $currentDifficulty)", NamedTextColor.GREEN))
+                    psychic.runTask({
+                        val effects = buildEffectsForDifficulty(currentDifficulty)
+                        effects.forEach { effect -> player.addPotionEffect(effect) }
                     }, 0)
                 } else {
-                    player.sendMessage(text("틀렸습니다!", NamedTextColor.RED))
+                    player.sendMessage(text("틀렸습니다! 난이도가 초기화됩니다.", NamedTextColor.RED))
+                    currentDifficulty = 0
                 }
                 currentProblem = null
             }
         }
     }
 
+    private fun buildEffectsForDifficulty(difficulty: Int): List<PotionEffect> {
+        val duration = (concept.durationTime / 50.0).toInt()
+        val effects = mutableListOf<PotionEffect>()
+
+        if (difficulty >= concept.speedStartDifficulty) {
+            val speedAmplifier = ((difficulty - concept.speedStartDifficulty) / concept.speedAmplifierUpDifficultyInterval).coerceAtMost(concept.speedMaxAmplifier)
+            effects.add(PotionEffect(PotionEffectType.SPEED, duration, speedAmplifier))
+        }
+
+        if (difficulty >= concept.resistanceStartDifficulty) {
+            val resistanceAmplifier = ((difficulty - concept.resistanceStartDifficulty) / concept.resistanceAmplifierUpDifficultyInterval).coerceAtMost(concept.resistanceMaxAmplifier)
+            effects.add(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, duration, resistanceAmplifier))
+        }
+
+        if (difficulty >= concept.saturationStartDifficulty) {
+            effects.add(PotionEffect(PotionEffectType.SATURATION, duration, 0))
+        }
+
+        return effects
+    }
+
     enum class MathProblems(val effectType: PotionEffectType) {
         BASIC(PotionEffectType.SPEED),
         INTERMEDIATE(PotionEffectType.DAMAGE_RESISTANCE),
-        ADVANCED(PotionEffectType.SATURATION)
+        ADVANCED(PotionEffectType.SATURATION);
 
         companion object {
             fun getByDifficulty(difficulty: Int) = when {

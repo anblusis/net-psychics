@@ -38,10 +38,10 @@ import org.bukkit.util.Vector
 class AbilityConceptPumpkinGhost : AbilityConcept() {
 
     @Config
-    val pumpkinSpeed = 0.8
+    val pumpkinSpeed = 0.9
 
     @Config
-    val costPerHalf = 0.25
+    val costPerHalf = 0.075
 
     @Config
     val detectionPreparationTick = 100
@@ -58,9 +58,9 @@ class AbilityConceptPumpkinGhost : AbilityConcept() {
     init {
         displayName = "호박 유령"
         type = AbilityType.ACTIVE
-        cost = 20.0
+        cost = 10.0
         range = 6.0
-        damage = Damage.of(DamageType.BLAST, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 6.0))
+        damage = Damage.of(DamageType.BLAST, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 2.5))
         knockback = 0.2
         description = listOf(
             text("좌클릭 시 마나를 소모해 유령이 깃든 잭오랜턴 하나를 얻습니다."),

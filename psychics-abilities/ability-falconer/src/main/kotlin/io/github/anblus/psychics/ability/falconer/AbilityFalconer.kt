@@ -39,7 +39,7 @@ import kotlin.random.Random.Default.nextInt
 class AbilityConceptFalconer : AbilityConcept() {
 
     @Config
-    val spawnLimitOfPhantom = 6
+    val spawnLimitOfPhantom = 10
 
     @Config
     val phantomTeleportRange = 12.0
@@ -56,7 +56,7 @@ class AbilityConceptFalconer : AbilityConcept() {
     init {
         displayName = "매잡이"
         type = AbilityType.ACTIVE
-        cost = 20.0
+        cost = 10.0
         cooldownTime = 500L
         castingTime = 3000L
         range = 36.0

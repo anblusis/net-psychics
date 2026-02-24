@@ -174,6 +174,14 @@ val SPELL_PATTERNS: List<SpellPatternMeta> = listOf(
         range = 20.0,
         cooldownMs = 2000L
     ),
+    // 마나 생성: 마나 회복
+     SpellPatternMeta(
+        sequence = listOf(ChantInput.L, ChantInput.L, ChantInput.R, ChantInput.R, ChantInput.L),
+        title = "마나 생성",
+        manaCost = 0.0,
+        description = "즉시 마나를 5 회복합니다.",
+        cooldownMs = 2000L
+    ),
 )
 
 /**
@@ -390,7 +398,6 @@ class AbilityIncantation : Ability<AbilityConceptIncantation>(), Listener {
     private fun finalizeSuccess(meta: SpellPatternMeta) {
         val s = session ?: return
         if (s.finished) return
-        s.finished = true
         success = true
 
         val player = esper.player
@@ -400,6 +407,8 @@ class AbilityIncantation : Ability<AbilityConceptIncantation>(), Listener {
             finalizeSessionFailure()
             return
         }
+
+        s.finished = true
 
         applyPatternEffect(meta) // now dispatches by meta.title
         player.sendActionBar(text("영창 성공: ${meta.title}").color(NamedTextColor.GREEN))
@@ -570,6 +579,7 @@ class AbilityIncantation : Ability<AbilityConceptIncantation>(), Listener {
             "속박 파동" -> performSnareWave(meta)
             "보호 장막" -> performBarrier()
             "화염 잔영" -> performFlameTrail(meta)
+            "마나 생성" -> psychic.mana += 5
         }
     }
 

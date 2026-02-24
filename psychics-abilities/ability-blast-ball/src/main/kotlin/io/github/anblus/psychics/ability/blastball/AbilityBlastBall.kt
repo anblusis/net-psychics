@@ -37,7 +37,7 @@ class AbilityConceptBlastBall : AbilityConcept() {
     val ballGravity = 0.04
 
     @Config
-    val ballSpeedMultipleOnCollision = 0.8
+    val ballSpeedMultipleOnCollision = 0.9
 
     @Config
     val ballSpeedMultipleOnUpdate = 0.97
@@ -57,9 +57,9 @@ class AbilityConceptBlastBall : AbilityConcept() {
     init {
         displayName = "폭발 공"
         type = AbilityType.ACTIVE
-        cooldownTime = 1000L
+        cooldownTime = 5000L
         cost = 20.0
-        damage = Damage.of(DamageType.BLAST, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 5.0))
+        damage = Damage.of(DamageType.BLAST, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 4.0))
         description = listOf(
             text("능력 사용시 바라보는 방향으로 폭발하는 공을 투척합니다."),
             text("투척한 공은 블록에 튕기다가 일정 시간이 지나거나"),

@@ -39,7 +39,7 @@ class AbilityConceptMagician : AbilityConcept() {
         type = AbilityType.PASSIVE
         cost = 20.0
         cooldownTime = 2000L
-        damage = Damage.of(DamageType.MELEE, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 4.0))
+        damage = Damage.of(DamageType.MELEE, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 3.0))
         description = listOf(
             text("능력 아이템을 들고 상대를 타격 시 무작위의"),
             text("효과와 함께 능력 데미지를 입힙니다."),

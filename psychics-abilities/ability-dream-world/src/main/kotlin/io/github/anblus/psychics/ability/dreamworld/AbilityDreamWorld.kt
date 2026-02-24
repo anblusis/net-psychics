@@ -41,10 +41,10 @@ class AbilityConceptDreamWorld : AbilityConcept() {
     val rainbowGravity = 0.01
 
     @Config
-    val rainbowSpreadCycle = 2.0
+    val rainbowSpreadCycle = 1.5
 
     @Config
-    val rainbowSpreadBoost = 3.0
+    val rainbowSpreadBoost = 4.0
 
     @Config
     val rainbowSpreadPercent = 0.4
@@ -60,7 +60,7 @@ class AbilityConceptDreamWorld : AbilityConcept() {
         type = AbilityType.ACTIVE
         cooldownTime = 10000L
         durationTime = 40000L
-        cost = 80.0
+        cost = 70.0
         range = 128.0
         damage = Damage.of(DamageType.MELEE, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 0.5))
         description = listOf(
