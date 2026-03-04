@@ -120,7 +120,7 @@ class AbilityEruption : ActiveAbility<AbilityConceptEruption>(), Listener {
 
         val range = concept.explosionRange.toInt()
         world.spawnParticle(
-            Particle.EXPLOSION_HUGE,
+            Particle.EXPLOSION_EMITTER,
             location,
             ((range * range) / 3).toInt(),
             range.toDouble(),

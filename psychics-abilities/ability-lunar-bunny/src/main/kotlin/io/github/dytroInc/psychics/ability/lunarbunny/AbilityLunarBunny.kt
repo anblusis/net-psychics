@@ -59,8 +59,8 @@ class AbilityLunarBunny : ActiveAbility<AbilityConceptLunarBunny>(), Listener {
         }
 
         private val effects = listOf(
-            PotionEffectType.INCREASE_DAMAGE, // 힘
-            PotionEffectType.DAMAGE_RESISTANCE, // 저항
+            PotionEffectType.STRENGTH, // 힘
+            PotionEffectType.RESISTANCE, // 저항
             PotionEffectType.REGENERATION, // 재생
         )
     }

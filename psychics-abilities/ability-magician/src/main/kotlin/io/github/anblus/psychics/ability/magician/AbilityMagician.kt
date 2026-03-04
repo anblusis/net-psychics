@@ -88,7 +88,7 @@ class AbilityMagician : Ability<AbilityConceptMagician>(), Listener {
                 cooldownTime = concept.cooldownTime
                 psychic.mana -= concept.cost
                 val world = entity.world
-                world.spawnParticle(Particle.DRAGON_BREATH, entity.boundingBox.center.toLocation(world), 12, 0.3, 0.3, 0.3, 0.0)
+                world.spawnParticle(Particle.DRAGON_BREATH, entity.boundingBox.center.toLocation(world), 12, 0.3, 0.3, 0.3, 0.0, 1.0f)
                 world.playSound(entity.location, Sound.ENTITY_ENDERMAN_TELEPORT, 2.0F, 2.0F)
                 event.isCancelled = true
                 entity.psychicDamage()

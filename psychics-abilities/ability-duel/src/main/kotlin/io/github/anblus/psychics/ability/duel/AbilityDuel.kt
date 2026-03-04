@@ -93,7 +93,7 @@ class AbilityDuel : Ability<AbilityConceptDuel>(), Listener {
 
                         val loc = Vector(cos(angle) * 0.6, height, sin(angle) * 0.6)
                         player.spawnParticle(
-                            Particle.REDSTONE,
+                            Particle.DUST,
                             duelLocation!!.clone().add(0.5, 1.5, 0.5).add(loc),
                             1,
                             Particle.DustOptions(Color.fromRGB(0,255 - tick.div(3).mod(256), 255 - tick.div(3).mod(256)), 0.8f)
@@ -138,9 +138,9 @@ class AbilityDuel : Ability<AbilityConceptDuel>(), Listener {
         createArena(duelLocation!!)
 
         arrayOf(player, target).forEach { entity ->
-            entity.health = entity.getAttribute(Attribute.GENERIC_MAX_HEALTH)!!.value
-            entity.addPotionEffect(PotionEffect(PotionEffectType.SLOW, 60, 4))
-            entity.addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 60, 4))
+            entity.health = entity.getAttribute(Attribute.MAX_HEALTH)!!.value
+            entity.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 4))
+            entity.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 60, 4))
             if (entity is Player) {
                 entity.playSound(entity.location, Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f)
                 entity.showTitle(createTitle("3"))
@@ -158,7 +158,7 @@ class AbilityDuel : Ability<AbilityConceptDuel>(), Listener {
                 }, 60L)
             }
         }
-        target.addPotionEffect(PotionEffect(PotionEffectType.SLOW_DIGGING, concept.debuffDuration, 2))
+        target.addPotionEffect(PotionEffect(PotionEffectType.MINING_FATIGUE, concept.debuffDuration, 2))
     }
     private fun createTitle(content: String): Title {
         return title(text(content).color(NamedTextColor.RED),

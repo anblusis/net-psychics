@@ -63,7 +63,7 @@ class AbilityKnockDown : ActiveAbility<AbilityConceptSample>(), Listener {
             val loc = Vector(cos(angle), height, sin(angle))
 
             esper.player.world.spawnParticle(
-                Particle.REDSTONE,
+                Particle.DUST,
                 esper.player.location.add(loc),
                 1,
                 Particle.DustOptions(Color.fromRGB(tick.mod(256),0,0), 1f)

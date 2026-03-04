@@ -76,7 +76,7 @@ class AbilityFlamethrower : Ability<AbilityConceptFlamethrower>(), Listener {
         psychic.runTaskTimer({
              if (isUsing) {
                  esper.player.addPotionEffect(
-                     PotionEffect(PotionEffectType.SLOW, 5, 1, false, false, false)
+                     PotionEffect(PotionEffectType.SLOWNESS, 5, 1, false, false, false)
                  )
                  if (psychic.mana < concept.cost) {
                      psychic.runTask({

@@ -100,7 +100,7 @@ class AbilityMediation : Ability<AbilityConceptMediation>(), Listener {
 
                             val to = target.boundingBox.center.toLocation(world)
                             TrailSupport.trail(start, to, 0.4) { w, x, y, z ->
-                                w.spawnParticle(Particle.WATER_WAKE, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
+                                w.spawnParticle(Particle.FISHING, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
                             }
                             world.playSound(
                                 target.location,

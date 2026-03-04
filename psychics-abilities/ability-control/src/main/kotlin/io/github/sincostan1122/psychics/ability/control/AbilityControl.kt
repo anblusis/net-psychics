@@ -150,13 +150,13 @@ class AbilityControl : ActiveAbility<AbilityConceptControl>(), Listener {
             PotionEffect(PotionEffectType.INVISIBILITY, (concept.durationTime / 50L).toInt(), 1, false, false, false)
         )
         esper.player.addPotionEffect(
-            PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, (concept.durationTime / 50L).toInt(), 20, false, false, false)
+            PotionEffect(PotionEffectType.RESISTANCE, (concept.durationTime / 50L).toInt(), 20, false, false, false)
         )
         esper.player.addPotionEffect(
             PotionEffect(PotionEffectType.WEAKNESS, (concept.durationTime / 50L).toInt(), 1, false, false, false)
         )
         esper.player.addPotionEffect(
-            PotionEffect(PotionEffectType.SLOW_DIGGING, (concept.durationTime / 50L).toInt(), 20, false, false, false)
+            PotionEffect(PotionEffectType.MINING_FATIGUE, (concept.durationTime / 50L).toInt(), 20, false, false, false)
         )
 
         world.getNearbyEntities(box) { entity ->
@@ -181,7 +181,7 @@ class AbilityControl : ActiveAbility<AbilityConceptControl>(), Listener {
             PotionEffect(PotionEffectType.WEAKNESS, 10, 10, false, false, false)
         )
         entity.addPotionEffect(
-            PotionEffect(PotionEffectType.SLOW_DIGGING, 10, 10, false, false, false)
+            PotionEffect(PotionEffectType.MINING_FATIGUE, 10, 10, false, false, false)
         )
     }
 

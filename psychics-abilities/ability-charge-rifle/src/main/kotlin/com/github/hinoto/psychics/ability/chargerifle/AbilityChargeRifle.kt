@@ -51,9 +51,9 @@ class AbilityChargeRifle : ActiveAbility<AbilityConceptChargeRifle>(), Listener 
         val world = event.player.world
         val player = event.player
 
-        player.addPotionEffect(PotionEffect(PotionEffectType.SLOW, 80, 10,
+        player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 10,
             false, false, false))
-        player.addPotionEffect(PotionEffect(PotionEffectType.JUMP, 80, 200,
+        player.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, 80, 200,
             false, false, false))
 
         world.playSound(player.location, Sound.BLOCK_PORTAL_TRIGGER, 1.0f, 1.0f)
@@ -68,7 +68,7 @@ class AbilityChargeRifle : ActiveAbility<AbilityConceptChargeRifle>(), Listener 
 
             TrailSupport.trail(loc, hitLocation, 0.4) { w, x, y, z ->
                 w.spawnParticle(
-                    Particle.REDSTONE, x, y, z, 1,
+                    Particle.DUST, x, y, z, 1,
                     0.0, 0.0, 0.0, 0.0, Particle.DustOptions(Color.RED, 0.2f)
                 )
             }

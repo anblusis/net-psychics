@@ -82,24 +82,24 @@ class AbilityRandomEgg : Ability<AbilityConceptRandomEgg>(), Listener {
         arrayOf(2, 3), arrayOf(1, 1), arrayOf(1, 1))
 
     val contentList = arrayOf(EntityType.CHICKEN, EntityType.PIG, EntityType.COW, EntityType.SHEEP, EntityType.ZOMBIE,
-        EntityType.SKELETON, EntityType.PRIMED_TNT, Material.IRON_INGOT, null, EntityType.EVOKER,
-        EntityType.SNOWMAN, Material.DIAMOND, EntityType.HORSE, EntityType.ARROW, EntityType.ZOMBIE,
+        EntityType.SKELETON, EntityType.TNT, Material.IRON_INGOT, null, EntityType.EVOKER,
+        EntityType.SNOW_GOLEM, Material.DIAMOND, EntityType.HORSE, EntityType.ARROW, EntityType.ZOMBIE,
         EntityType.CREEPER, EntityType.CREEPER, Material.COBBLESTONE, Material.EGG, Material.LAVA,
         Material.COBWEB, Material.WOODEN_SWORD, EntityType.VILLAGER, EntityType.RAVAGER, EntityType.WITCH,
         null, EntityType.ZOMBIE, Material.DIAMOND_BLOCK, EntityType.PARROT, EntityType.PANDA,
-        EntityType.PRIMED_TNT, EntityType.MINECART, EntityType.ENDERMAN, EntityType.ZOMBIFIED_PIGLIN, EntityType.GUARDIAN,
-        EntityType.CAT, EntityType.FOX, Material.WATER, Material.POWDER_SNOW, EntityType.THROWN_EXP_BOTTLE,
+        EntityType.TNT, EntityType.MINECART, EntityType.ENDERMAN, EntityType.ZOMBIFIED_PIGLIN, EntityType.GUARDIAN,
+        EntityType.CAT, EntityType.FOX, Material.WATER, Material.POWDER_SNOW, EntityType.EXPERIENCE_BOTTLE,
         EntityType.GIANT, EntityType.GOAT, EntityType.LLAMA, EntityType.SLIME, EntityType.WOLF,
         Material.BREAD, Material.HEART_OF_THE_SEA, Material.ENCHANTED_GOLDEN_APPLE, Material.CAKE, EntityType.WITHER,
         EntityType.WOLF, EntityType.BEE, EntityType.SPLASH_POTION, EntityType.ARMOR_STAND, EntityType.SPIDER,
-        EntityType.PHANTOM, EntityType.SHULKER, EntityType.MUSHROOM_COW, EntityType.SKELETON, EntityType.CREEPER,
+        EntityType.PHANTOM, EntityType.SHULKER, EntityType.MOOSHROOM, EntityType.SKELETON, EntityType.CREEPER,
         EntityType.RABBIT, EntityType.ENDER_DRAGON, Material.BEDROCK)
 
     val blockList = arrayOf(Material.LAVA, Material.COBWEB, Material.DIAMOND_BLOCK, Material.WATER, Material.POWDER_SNOW,
         Material.CAKE, Material.BEDROCK)
 
     val babyList = arrayOf(EntityType.CHICKEN, EntityType.PIG, EntityType.COW, EntityType.SHEEP, EntityType.ZOMBIE,
-        EntityType.HORSE, EntityType.VILLAGER, EntityType.MUSHROOM_COW)
+        EntityType.HORSE, EntityType.VILLAGER, EntityType.MOOSHROOM)
 
     var sumNumber: Int = 0
 
@@ -107,7 +107,7 @@ class AbilityRandomEgg : Ability<AbilityConceptRandomEgg>(), Listener {
 
     var percentList = ArrayList<Double>()
 
-    val potionList = "ABSORPTION, BAD_OMEN, BLINDNESS, CONDUIT_POWER, CONFUSION, DAMAGE_RESISTANCE, DOLPHINS_GRACE, FAST_DIGGING, FIRE_RESISTANCE, GLOWING, HARM, HEAL, HEALTH_BOOST, HERO_OF_THE_VILLAGE, HUNGER, INCREASE_DAMAGE, INVISIBILITY, JUMP, LEVITATION, LUCK, NIGHT_VISION, POISON, REGENERATION, SATURATION, SLOW, SLOW_DIGGING, SLOW_FALLING, SPEED, UNLUCK, WATER_BREATHING, WEAKNESS, WITHER".split(", ")
+    private val potionTypes: List<PotionEffectType> = PotionEffectType.values().toList()
 
     val messageList = arrayOf("빵빵 터지는 TNT 대포가 나오길 바라셨나요? 여기 웃음이 빵빵 터지는 문구가 있습니다!", "이 문구는 달걀 하나의 가치가 있습니다.", "닭이 먼저인가, 달걀이 먼저인가? <- " +
             "글쎄요, 그 전에 먼저 달걀에서 닭이 안 나오는 걸요.", "달걀을 마구잡이로 난사 하지 마시고 내용물 하나 하나를 주의 깊게 봐보세요. 이 문구도요!",
@@ -202,9 +202,9 @@ class AbilityRandomEgg : Ability<AbilityConceptRandomEgg>(), Listener {
                     entity = entity as Skeleton
                     entity.customName = "${ChatColor.DARK_GRAY}${ChatColor.BOLD}슈퍼 스켈레톤"
                     entity.equipment.setItemInMainHand(ItemStack(Material.BOW).apply {
-                        addEnchantment(Enchantment.ARROW_DAMAGE, 3)
-                        addEnchantment(Enchantment.ARROW_FIRE, 1)
-                        addEnchantment(Enchantment.ARROW_KNOCKBACK, 2)
+                        addEnchantment(Enchantment.POWER, 3)
+                        addEnchantment(Enchantment.FLAME, 1)
+                        addEnchantment(Enchantment.PUNCH, 2)
                     })
                     entity.isCustomNameVisible = true
                     entity.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 999999, 3))
@@ -233,7 +233,7 @@ class AbilityRandomEgg : Ability<AbilityConceptRandomEgg>(), Listener {
                 } else if (contentList[result] in babyList) {
                     entity = entity as Ageable
                     entity.setBaby()
-                } else if (entity.type == EntityType.PRIMED_TNT) {
+                } else if (entity.type == EntityType.TNT) {
                     entity = entity as TNTPrimed
                     if (nameList[result] == "폭탄 대포") {
                         if (it == 0) entity.fuseTicks = 50
@@ -249,10 +249,10 @@ class AbilityRandomEgg : Ability<AbilityConceptRandomEgg>(), Listener {
                     entity = entity as Creeper
                     entity.isPowered = true
                 } else if (entity.type == EntityType.MINECART) {
-                    world.spawnEntity(location, EntityType.MINECART_CHEST, CreatureSpawnEvent.SpawnReason.EGG).apply {velocity = Vector(nextDouble(1.0) - 0.5, 0.2, nextDouble(1.0) - 0.5)}
-                    world.spawnEntity(location, EntityType.MINECART_FURNACE, CreatureSpawnEvent.SpawnReason.EGG).apply {velocity = Vector(nextDouble(1.0) - 0.5, 0.2, nextDouble(1.0) - 0.5)}
-                    world.spawnEntity(location, EntityType.MINECART_HOPPER, CreatureSpawnEvent.SpawnReason.EGG).apply {velocity = Vector(nextDouble(1.0) - 0.5, 0.2, nextDouble(1.0) - 0.5)}
-                } else if (entity.type == EntityType.THROWN_EXP_BOTTLE) entity.velocity = Vector(nextDouble(0.4) - 0.2, 1.0, nextDouble(0.4) - 0.2)
+                    world.spawnEntity(location, EntityType.CHEST_MINECART, CreatureSpawnEvent.SpawnReason.EGG).apply {velocity = Vector(nextDouble(1.0) - 0.5, 0.2, nextDouble(1.0) - 0.5)}
+                    world.spawnEntity(location, EntityType.FURNACE_MINECART, CreatureSpawnEvent.SpawnReason.EGG).apply {velocity = Vector(nextDouble(1.0) - 0.5, 0.2, nextDouble(1.0) - 0.5)}
+                    world.spawnEntity(location, EntityType.HOPPER_MINECART, CreatureSpawnEvent.SpawnReason.EGG).apply {velocity = Vector(nextDouble(1.0) - 0.5, 0.2, nextDouble(1.0) - 0.5)}
+                } else if (entity.type == EntityType.EXPERIENCE_BOTTLE) entity.velocity = Vector(nextDouble(0.4) - 0.2, 1.0, nextDouble(0.4) - 0.2)
                 else if (entity.type == EntityType.SLIME) {
                     entity = entity as Slime
                     entity.size = nextInt(8, 12)
@@ -268,8 +268,10 @@ class AbilityRandomEgg : Ability<AbilityConceptRandomEgg>(), Listener {
                     entity.rabbitType = Rabbit.Type.THE_KILLER_BUNNY
                 } else if (entity.type == EntityType.SPLASH_POTION) {
                     entity.velocity = Vector(0.0, -10.0, 0.0)
-                    val potionType = PotionEffectType.getByName(potionList[nextInt(0,potionList.size)]) as PotionEffectType
+
+                    val potionType = potionTypes[nextInt(0, potionTypes.size)]
                     player.sendMessage("효과: ${ChatColor.BOLD}${potionType.name}")
+
                     val potion = PotionEffect(potionType, 600, 1)
                     location.getNearbyEntities(4.0, 2.0, 4.0
                     ).forEach { target ->
@@ -306,6 +308,9 @@ class AbilityRandomEgg : Ability<AbilityConceptRandomEgg>(), Listener {
 
     }
 }
+
+
+
 
 
 

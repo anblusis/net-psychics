@@ -156,7 +156,7 @@ class AbilityMultiTonic : Ability<AbilityConceptMultiTonic>(), Listener {
                         return
                     }
 
-                    player.world.spawnParticle(Particle.BLOCK_DUST, player.boundingBox.center.toLocation(player.world), 6, 0.2, 0.2, 0.2, 0.0, Material.AMETHYST_BLOCK.createBlockData(), true)
+                    player.world.spawnParticle(Particle.BLOCK, player.boundingBox.center.toLocation(player.world), 6, 0.2, 0.2, 0.2, 0.0, Material.AMETHYST_BLOCK.createBlockData(), true)
                     player.world.playSound(player.location, Sound.ENTITY_GENERIC_EAT, 1.0F, 0.1F)
                     cooldownTime = concept.cooldownTime
                     psychic.mana -= concept.cost
@@ -183,11 +183,11 @@ class AbilityMultiTonic : Ability<AbilityConceptMultiTonic>(), Listener {
                     player.sendMessage("${nutritionsColor[randomResult-1]}${nutritionsName[randomResult-1]}${ChatColor.WHITE}의 효능이 느껴진다!\n" +
                             "${nutritionsColor[randomResult-1]}${nutritionsName[randomResult-1]}${ChatColor.WHITE}의 효과: ${nutritionsEffectExplain[randomResult-1]}")
                     if (randomResult == 1) {
-                        var potion = player.getPotionEffect(PotionEffectType.FAST_DIGGING)
+                        var potion = player.getPotionEffect(PotionEffectType.HASTE)
                         if (potion == null) {
-                            player.addPotionEffect(PotionEffect(PotionEffectType.FAST_DIGGING, 1200, 1, false, false))
+                            player.addPotionEffect(PotionEffect(PotionEffectType.HASTE, 1200, 1, false, false))
                         } else {
-                            player.addPotionEffect(PotionEffect(PotionEffectType.FAST_DIGGING, potion.duration + 1200, potion.amplifier + 1, false, false))
+                            player.addPotionEffect(PotionEffect(PotionEffectType.HASTE, potion.duration + 1200, potion.amplifier + 1, false, false))
                         }
                         potion = player.getPotionEffect(PotionEffectType.NIGHT_VISION)
                         if (potion == null) {
@@ -196,11 +196,11 @@ class AbilityMultiTonic : Ability<AbilityConceptMultiTonic>(), Listener {
                             player.addPotionEffect(PotionEffect(PotionEffectType.NIGHT_VISION, potion.duration + 1200, potion.amplifier + 1, false, false))
                         }
                     } else if (randomResult == 2) {
-                        var potion = player.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)
+                        var potion = player.getPotionEffect(PotionEffectType.RESISTANCE)
                         if (potion == null) {
-                            player.addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 1200, 0, false, false))
+                            player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 1200, 0, false, false))
                         } else {
-                            player.addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, potion.duration + 1200, potion.amplifier + 1, false, false))
+                            player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, potion.duration + 1200, potion.amplifier + 1, false, false))
                         }
                     } else if (randomResult == 3) {
                         var potion = player.getPotionEffect(PotionEffectType.SPEED)
@@ -225,11 +225,11 @@ class AbilityMultiTonic : Ability<AbilityConceptMultiTonic>(), Listener {
                             player.addPotionEffect(PotionEffect(PotionEffectType.SATURATION, potion.duration + 600, potion.amplifier + 1, false, false))
                         }
                     } else if (randomResult == 5) {
-                        var potion = player.getPotionEffect(PotionEffectType.INCREASE_DAMAGE)
+                        var potion = player.getPotionEffect(PotionEffectType.STRENGTH)
                         if (potion == null) {
-                            player.addPotionEffect(PotionEffect(PotionEffectType.INCREASE_DAMAGE, 1200, 0, false, false))
+                            player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 1200, 0, false, false))
                         } else {
-                            player.addPotionEffect(PotionEffect(PotionEffectType.INCREASE_DAMAGE, potion.duration + 1200, potion.amplifier + 1, false, false))
+                            player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, potion.duration + 1200, potion.amplifier + 1, false, false))
                         }
                     } else if (randomResult == 6) {
                         var potion = player.getPotionEffect(PotionEffectType.REGENERATION)
@@ -245,11 +245,11 @@ class AbilityMultiTonic : Ability<AbilityConceptMultiTonic>(), Listener {
                             player.addPotionEffect(PotionEffect(PotionEffectType.FIRE_RESISTANCE, potion.duration + 1200, potion.amplifier + 1, false, false))
                         }
                     } else {
-                        var potion = player.getPotionEffect(PotionEffectType.JUMP)
+                        var potion = player.getPotionEffect(PotionEffectType.JUMP_BOOST)
                         if (potion == null) {
-                            player.addPotionEffect(PotionEffect(PotionEffectType.JUMP, 1200, 1, false, false))
+                            player.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, 1200, 1, false, false))
                         } else {
-                            player.addPotionEffect(PotionEffect(PotionEffectType.JUMP, potion.duration + 1200, potion.amplifier + 1, false, false))
+                            player.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, potion.duration + 1200, potion.amplifier + 1, false, false))
                         }
                         potion = player.getPotionEffect(PotionEffectType.SPEED)
                         if (potion == null) {

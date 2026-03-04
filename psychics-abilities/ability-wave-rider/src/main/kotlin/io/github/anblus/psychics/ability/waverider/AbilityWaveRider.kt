@@ -206,7 +206,7 @@ class AbilityWaveRider : ActiveAbility<AbilityConceptWaveRider>(), Listener {
         val aabb = computeWaveBox()
         for (ent in player.world.getNearbyEntities(aabb)) {
             if (ent is LivingEntity && TargetFilter(player).test(ent)) {
-                ent.addPotionEffect(PotionEffect(PotionEffectType.SLOW, concept.slowDuration, concept.slowAmplifier, true, true, true))
+                ent.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, concept.slowDuration, concept.slowAmplifier, true, true, true))
                 finish(true)
                 return
             }
@@ -293,7 +293,7 @@ class AbilityWaveRider : ActiveAbility<AbilityConceptWaveRider>(), Listener {
             val v = player.velocity; v.y = UPWARD_VELOCITY; player.velocity = v
             fallImmune = true // 튀어 오르는 순간부터 착지 전까지 면역
             player.world.playSound(player.location, Sound.ENTITY_DOLPHIN_JUMP,1f,1.0f)
-            player.world.spawnParticle(Particle.WATER_SPLASH, player.location, 25, 1.2,0.4,1.2,0.05)
+            player.world.spawnParticle(Particle.SPLASH, player.location, 25, 1.2,0.4,1.2,0.05)
             playWaveDebris(direction.clone())
             stopWave()
         }
@@ -311,8 +311,8 @@ class AbilityWaveRider : ActiveAbility<AbilityConceptWaveRider>(), Listener {
         player.world.playSound(crashCenter, Sound.ENTITY_GENERIC_SPLASH, 2.0f, 0.6f)
         player.world.playSound(crashCenter, Sound.ITEM_BUCKET_EMPTY, 1.6f, 0.8f)
         player.world.playSound(crashCenter, Sound.BLOCK_BUBBLE_COLUMN_WHIRLPOOL_AMBIENT, 1.3f, 0.95f)
-        player.world.spawnParticle(Particle.WATER_SPLASH, crashCenter.clone().add(0.0,0.55,0.0),100,concept.crashRadius,concept.crashRadius,concept.crashRadius,0.24)
-        player.world.spawnParticle(Particle.WATER_BUBBLE, crashCenter.clone().add(0.0,0.4,0.0),50,concept.crashRadius,concept.crashRadius,concept.crashRadius,0.15)
+        player.world.spawnParticle(Particle.SPLASH, crashCenter.clone().add(0.0,0.55,0.0),100,concept.crashRadius,concept.crashRadius,concept.crashRadius,0.24)
+        player.world.spawnParticle(Particle.BUBBLE, crashCenter.clone().add(0.0,0.4,0.0),50,concept.crashRadius,concept.crashRadius,concept.crashRadius,0.15)
         player.world.spawnParticle(Particle.BUBBLE_POP, crashCenter.clone().add(0.0,0.9,0.0),50,concept.crashRadius,concept.crashRadius,concept.crashRadius,0.10)
 
         // 피해/슬로 1회 적용
@@ -320,7 +320,7 @@ class AbilityWaveRider : ActiveAbility<AbilityConceptWaveRider>(), Listener {
         player.world.getNearbyEntities(crashCenter, radius, radius, radius).forEach { ent ->
             if (ent is LivingEntity && TargetFilter(player).test(ent)) {
                 ent.psychicDamage(knockbackLocation = crashCenter, knockback = concept.crashKnockback * 0.85)
-                ent.addPotionEffect(PotionEffect(PotionEffectType.SLOW, concept.slowDuration, concept.slowAmplifier, true, true, true))
+                ent.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, concept.slowDuration, concept.slowAmplifier, true, true, true))
             }
         }
 
@@ -366,7 +366,7 @@ class AbilityWaveRider : ActiveAbility<AbilityConceptWaveRider>(), Listener {
                     val newLoc = l.clone().add(f.vel)
                     val below = newLoc.clone().add(0.0, -0.35, 0.0).block
                     if (below.type.isSolid || below.type == Material.WATER || life > 26) {
-                        d.world.spawnParticle(Particle.WATER_SPLASH, newLoc, 4, 0.2,0.12,0.2,0.03)
+                        d.world.spawnParticle(Particle.SPLASH, newLoc, 4, 0.2,0.12,0.2,0.03)
                         d.remove()
                     } else {
                         d.teleport(newLoc)

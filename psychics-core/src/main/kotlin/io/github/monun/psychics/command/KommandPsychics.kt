@@ -17,7 +17,6 @@
 
 package io.github.monun.psychics.command
 
-import io.github.monun.invfx.openFrame
 import io.github.monun.kommand.KommandSource
 import io.github.monun.kommand.PluginKommand
 import io.github.monun.psychics.AbilityConcept
@@ -33,6 +32,7 @@ import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Material
 import org.bukkit.entity.Player
+import xyz.icetang.lib.invfx.openFrame
 
 internal object KommandPsychics {
     private lateinit var plugin: PsychicsPlugin

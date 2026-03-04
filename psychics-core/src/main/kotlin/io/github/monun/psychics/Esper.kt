@@ -21,13 +21,13 @@ import io.github.monun.psychics.attribute.EsperAttribute
 import io.github.monun.psychics.attribute.EsperStatistic
 import io.github.monun.psychics.damage.attackDamage
 import io.github.monun.psychics.item.removeAllPsychicbounds
+import org.bukkit.NamespacedKey
 import org.bukkit.attribute.Attribute
 import org.bukkit.attribute.AttributeModifier
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import java.io.File
 import java.lang.ref.WeakReference
-import java.util.*
 
 class Esper(
     val manager: PsychicManager,
@@ -38,7 +38,7 @@ class Esper(
 
     private val playerRef = WeakReference(player)
 
-    private val attributeUniqueId: UUID
+    private val attributeNamespacedKey: NamespacedKey = NamespacedKey(manager.plugin, "psychics_health_bonus")
 
     var psychic: Psychic? = null
         private set
@@ -49,12 +49,6 @@ class Esper(
     private val dataFile
         get() = File(manager.esperFolder, "${player.uniqueId}.yml")
 
-    init {
-        val uniqueId = player.uniqueId
-
-        attributeUniqueId = UUID(uniqueId.leastSignificantBits.inv(), uniqueId.mostSignificantBits.inv())
-    }
-
     /**
      * 능력치를 가져옵니다.
      */
@@ -62,7 +56,7 @@ class Esper(
         return when (attr) {
             EsperAttribute.ATTACK_DAMAGE -> player.attackDamage
             EsperAttribute.LEVEL -> player.level.toDouble()
-            EsperAttribute.DEFENSE -> player.getAttribute(Attribute.GENERIC_ARMOR)?.value ?: 0.0
+            EsperAttribute.DEFENSE -> player.getAttribute(Attribute.ARMOR)?.value ?: 0.0
             EsperAttribute.HEALTH -> player.health
             EsperAttribute.MANA -> psychic?.mana ?: 0.0
         }
@@ -109,13 +103,19 @@ class Esper(
 
     private fun updateAttribute() {
         val player = player
-        player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.let { maxHealth ->
+        player.getAttribute(Attribute.MAX_HEALTH)?.let { maxHealth ->
             val healthBonus = psychic?.concept?.healthBonus ?: 0.0
-            val modifier =
-                AttributeModifier(attributeUniqueId, "Psychics", healthBonus, AttributeModifier.Operation.ADD_NUMBER)
 
-            maxHealth.removeModifier(modifier)
-            maxHealth.addModifier(modifier)
+            // 키 기반으로 기존 modifier를 제거 후, 필요 시 다시 추가합니다.
+            maxHealth.removeModifier(attributeNamespacedKey)
+            if (healthBonus != 0.0) {
+                val modifier = AttributeModifier(
+                    attributeNamespacedKey,
+                    healthBonus,
+                    AttributeModifier.Operation.ADD_NUMBER
+                )
+                maxHealth.addModifier(modifier)
+            }
         }
     }
 

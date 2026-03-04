@@ -74,8 +74,9 @@ class AbilitySnatch : ActiveAbility<AbilityConceptSnatch>(WandAction.LEFT_CLICK)
             32,
             width, height, width,
             0.0,
-            null,
-            true
+            1.0f,
+            true,
+
         )
     }
 

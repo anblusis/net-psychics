@@ -66,10 +66,10 @@ class AbilityDarkContract : Ability<AbilityConceptDarkContract>(), Listener {
         val player = esper.player
         val location = player.location.apply { y += 2.0 }
         val world = location.world
-        world.spawnParticle(Particle.CRIT_MAGIC, location.x, location.y, location.z, 2, 0.5, 0.0, 0.5, 0.0, null, true)
+        world.spawnParticle(Particle.ENCHANTED_HIT, location.x, location.y, location.z, 2, 0.5, 0.0, 0.5, 0.0, null, true)
         if (!player.hasPotionEffect(PotionEffectType.SPEED)) player.addPotionEffects(
             mutableListOf(
-                PotionEffect(PotionEffectType.SLOW, 6, 2), PotionEffect(PotionEffectType.WEAKNESS, 6, 0)
+                PotionEffect(PotionEffectType.SLOWNESS, 6, 2), PotionEffect(PotionEffectType.WEAKNESS, 6, 0)
             )
         )
     }
@@ -83,7 +83,7 @@ class AbilityDarkContract : Ability<AbilityConceptDarkContract>(), Listener {
                     .test(entity) && (entity is Player || entity is Monster) && entity is LivingEntity && event.finalDamage > 0
             ) {
                 esper.player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 20, 4))
-                esper.player.removePotionEffect(PotionEffectType.SLOW)
+                esper.player.removePotionEffect(PotionEffectType.SLOWNESS)
                 esper.player.removePotionEffect(PotionEffectType.WEAKNESS)
                 event.damage *= 1.4
             }

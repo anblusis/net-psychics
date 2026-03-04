@@ -62,7 +62,7 @@ class AbilityAssassin : ActiveAbility<AbilityConceptAssassin>(), Listener {
                 if (entity is LivingEntity) {
                     entity.psychicDamage()
                     entity.addPotionEffects(listOf(
-                            PotionEffect(PotionEffectType.SLOW,
+                            PotionEffect(PotionEffectType.SLOWNESS,
                                 (concept.durationTime/1000*20).toInt(), 10)
                         )
                     )

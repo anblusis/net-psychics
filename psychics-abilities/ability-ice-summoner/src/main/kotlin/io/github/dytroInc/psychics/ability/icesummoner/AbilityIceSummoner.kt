@@ -162,8 +162,8 @@ class AbilityIceSummoner : ActiveAbility<AbilityConceptIceSummoner>(), Listener 
                                     val time = (concept.maxFrozenTime * 20.0).toInt()
                                     entity.addPotionEffects(
                                         mutableListOf(
-                                            PotionEffect(PotionEffectType.SLOW, time, 100),
-                                            PotionEffect(PotionEffectType.SLOW_DIGGING, time, 100),
+                                            PotionEffect(PotionEffectType.SLOWNESS, time, 100),
+                                            PotionEffect(PotionEffectType.MINING_FATIGUE, time, 100),
                                         )
                                     )
                                 }

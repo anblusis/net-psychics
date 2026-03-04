@@ -153,7 +153,7 @@ class AbilitySniping : Ability<AbilityConceptSniping>(), Listener {
         }
 
         TrailSupport.trail(start, to, 0.2) { w, x, y, z ->
-            w.spawnParticle(Particle.SMOKE_NORMAL, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
+            w.spawnParticle(Particle.SMOKE, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
         }
     }
 

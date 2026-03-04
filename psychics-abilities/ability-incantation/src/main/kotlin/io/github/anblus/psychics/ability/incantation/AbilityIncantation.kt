@@ -22,6 +22,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
+import org.bukkit.Color
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Material
 import org.bukkit.Particle
@@ -216,7 +217,7 @@ class AbilityConceptIncantation : AbilityConcept() {
                 displayName(text("영창 지팡이"))
                 addItemFlags(ItemFlag.HIDE_ENCHANTS)
             }
-            addUnsafeEnchantment(Enchantment.LUCK, 1)
+            addUnsafeEnchantment(Enchantment.FORTUNE, 1)
             isPsychicbound = true
         }
 
@@ -232,11 +233,11 @@ class AbilityConceptIncantation : AbilityConcept() {
                     val page = buildString {
                         appendLine("§d§l${p.title}")
                         appendLine("§b$seq")
-                        appendLine("§6§l마나§r§0 ${p.manaCost.toInt()}")
-                        p.cooldownMs?.let { appendLine("§6§l쿨타임§r ${it / 1000.0} 초") }
-                        p.range?.let { appendLine("§6§l사거리§r ${it.toInt()} 블록") }
-                        p.damageLabel?.let { lbl -> p.damageValue?.let { v -> appendLine("§6§l${lbl}§r $v") } }
-                        p.healLabel?.let { lbl -> p.healValue?.let { v -> appendLine("§6§l${lbl}§r $v") } }
+                        appendLine("§6§l마나 §0${p.manaCost.toInt()}")
+                        p.cooldownMs?.let { appendLine("§6§l쿨타임 §0${it / 1000.0} 초") }
+                        p.range?.let { appendLine("§6§l사거리 §0${it.toInt()} 블록") }
+                        p.damageLabel?.let { lbl -> p.damageValue?.let { v -> appendLine("§6§l${lbl} §0$v") } }
+                        p.healLabel?.let { lbl -> p.healValue?.let { v -> appendLine("§6§l${lbl} §0$v") } }
                         appendLine("")
                         appendLine("")
                         appendLine(p.description)
@@ -308,7 +309,7 @@ class AbilityIncantation : Ability<AbilityConceptIncantation>(), Listener {
         session = s
         success = false
         val seconds = (concept.sessionTimeoutMs / 1000.0).let { if (it % 1.0 == 0.0) it.toInt().toString() else "%.1f".format(it) }
-        player.addPotionEffect(PotionEffect(PotionEffectType.SLOW, (concept.sessionTimeoutMs / 50L).toInt(), 4, false, false, false))
+        player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, (concept.sessionTimeoutMs / 50L).toInt(), 4, false, false, false))
         player.sendActionBar(text("영창 시작 (${seconds}초)" ).color(NamedTextColor.LIGHT_PURPLE))
 
         s.particleTask = psychic.runTaskTimer({
@@ -323,7 +324,7 @@ class AbilityIncantation : Ability<AbilityConceptIncantation>(), Listener {
             while (i < 2 * Math.PI) {
                 val x = radius * cos(i)
                 val z = radius * sin(i)
-                world.spawnParticle(Particle.REDSTONE, loc.x + x, loc.y + 0.2, loc.z + z, 1, 0.0, 0.0, 0.0, 0.0, Particle.DustOptions(org.bukkit.Color.WHITE, 1.0f))
+                world.spawnParticle(Particle.DUST, loc.x + x, loc.y + 0.2, loc.z + z, 1, 0.0, 0.0, 0.0, 0.0, Particle.DustOptions(org.bukkit.Color.WHITE, 1.0f))
                 i += Math.PI / 16
             }
         }, 0L, 5L)
@@ -338,7 +339,7 @@ class AbilityIncantation : Ability<AbilityConceptIncantation>(), Listener {
         session?.timeoutTask?.cancel()
         session?.particleTask?.cancel()
 
-        esper.player.removePotionEffect(PotionEffectType.SLOW)
+        esper.player.removePotionEffect(PotionEffectType.SLOWNESS)
         session = null
         success = false
     }
@@ -432,7 +433,7 @@ class AbilityIncantation : Ability<AbilityConceptIncantation>(), Listener {
     private fun cleanupSession() {
         session?.timeoutTask?.cancel()
         session?.particleTask?.cancel()
-        esper.player.removePotionEffect(PotionEffectType.SLOW)
+        esper.player.removePotionEffect(PotionEffectType.SLOWNESS)
         session = null
     }
 
@@ -488,9 +489,9 @@ class AbilityIncantation : Ability<AbilityConceptIncantation>(), Listener {
             exploded = true
             val world = center.world
             if (radius >= 4.0)
-                world.spawnParticle(Particle.EXPLOSION_HUGE, center, 1, 0.0, 0.0, 0.0, 0.0)
+                world.spawnParticle(Particle.EXPLOSION_EMITTER, center, 1, 0.0, 0.0, 0.0, 0.0)
             else
-                world.spawnParticle(Particle.EXPLOSION_LARGE, center, 1, 0.0, 0.0, 0.0, 0.0)
+                world.spawnParticle(Particle.EXPLOSION_EMITTER, center, 1, 0.0, 0.0, 0.0, 0.0)
             world.playSound(center, Sound.ENTITY_GENERIC_EXPLODE, 1.2f, 1.05f)
             val dmg = Damage.of(damageType, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to damageValue))
             world.getNearbyEntities(center, radius, radius, radius) { esper.player.hostileFilter().test(it) }
@@ -537,7 +538,7 @@ class AbilityIncantation : Ability<AbilityConceptIncantation>(), Listener {
             val to = start.clone().add(start.direction.multiply(range))
             val hitSet = mutableSetOf<LivingEntity>() // 각 트레일별 피격 엔티티 집합
             TrailSupport.trail(start, to, 0.4) { w, x, y, z ->
-                w.spawnParticle(Particle.CRIT_MAGIC, x, y, z, 1, 0.02, 0.02, 0.02, 0.0)
+                w.spawnParticle(Particle.ENCHANTED_HIT, x, y, z, 1, 0.02, 0.02, 0.02, 0.0)
                 w.rayTraceEntities(
                     org.bukkit.Location(w, x, y, z),
                     start.direction,
@@ -560,7 +561,7 @@ class AbilityIncantation : Ability<AbilityConceptIncantation>(), Listener {
     private fun performHeal(player: org.bukkit.entity.Player, amount: Double, number: Int) {
         repeat(number) { i ->
             psychic.runTask({
-                player.psychicHeal(EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to amount))
+                player.psychicHeal(amount)
                 player.playSound(player.location, Sound.BLOCK_ENCHANTMENT_TABLE_USE, 0.8f, 1.4f)
                 player.world.spawnParticle(Particle.HEART, player.location.add(0.0, 1.0, 0.0), 4, 0.3, 0.5, 0.3, 0.0)
             }, i * 6L)
@@ -585,10 +586,10 @@ class AbilityIncantation : Ability<AbilityConceptIncantation>(), Listener {
 
     private fun performAmpBuff() {
         val p = esper.player
-        p.addPotionEffect(PotionEffect(PotionEffectType.INCREASE_DAMAGE, 20 * 5, 0, false, true, true))
+        p.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 20 * 5, 0, false, true, true))
         p.addPotionEffect(PotionEffect(PotionEffectType.REGENERATION, 20 * 5, 0, false, true, true))
         p.world.playSound(p.location, Sound.BLOCK_BEACON_POWER_SELECT, 1f, 1.2f)
-        p.world.spawnParticle(Particle.ENCHANTMENT_TABLE, p.location.add(0.0, 1.0, 0.0), 24, 0.6, 0.8, 0.6, 0.0)
+        p.world.spawnParticle(Particle.ENCHANT, p.location.add(0.0, 1.0, 0.0), 24, 0.6, 0.8, 0.6, 0.0)
     }
 
     private fun performSnareWave(meta: SpellPatternMeta) {
@@ -602,7 +603,7 @@ class AbilityIncantation : Ability<AbilityConceptIncantation>(), Listener {
         world.getNearbyEntities(center, radius, radius, radius) { p.hostileFilter().test(it) }
             .forEach { ent ->
                 ent as LivingEntity
-                ent.addPotionEffect(PotionEffect(PotionEffectType.SLOW, 20 * 4, 2, false, true, true))
+                ent.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 20 * 4, 2, false, true, true))
                 ent.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 20 * 4, 0, false, true, true))
                 ent.psychicDamage(dmg, knockback = 2.0)
             }
@@ -611,9 +612,9 @@ class AbilityIncantation : Ability<AbilityConceptIncantation>(), Listener {
     private fun performBarrier() {
         val p = esper.player
         p.addPotionEffect(PotionEffect(PotionEffectType.ABSORPTION, 20 * 12, 1, false, true, true))
-        p.addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 20 * 8, 0, false, true, true))
+        p.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 20 * 8, 0, false, true, true))
         p.playSound(p.location, Sound.ITEM_SHIELD_BLOCK, 1f, 1.0f)
-        p.world.spawnParticle(Particle.SPELL_INSTANT, p.location.add(0.0, 1.0, 0.0), 32, 0.6, 0.8, 0.6, 0.05)
+        p.world.spawnParticle(Particle.INSTANT_EFFECT, p.location.add(0.0, 1.0, 0.0), 32, 0.6, 0.8, 0.6, 0.05,Particle.Spell(Color.WHITE, 1.0f))
     }
 
     private fun performFlameTrail(meta: SpellPatternMeta) {

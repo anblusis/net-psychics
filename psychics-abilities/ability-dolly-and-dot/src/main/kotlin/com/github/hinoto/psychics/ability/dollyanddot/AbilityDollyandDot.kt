@@ -144,10 +144,10 @@ class AbilityDollyAndDot : ActiveAbility<AbilityConceptDollyAndDot>(), Listener 
         }
         val world = dolly!!.location.world
 
-        world.spawnParticle(Particle.BLOCK_DUST, dolly!!.location,
+        world.spawnParticle(Particle.BLOCK, dolly!!.location,
             32, 1.0, 1.0, 1.0, 4.0, Material.SAND.createBlockData(), true)
         world.playSound(dolly!!.location, Sound.BLOCK_SAND_STEP, 1.0f, 1.0f)
-        world.spawnParticle(Particle.BLOCK_DUST, dot!!.location,
+        world.spawnParticle(Particle.BLOCK, dot!!.location,
             32, 1.0, 1.0, 1.0, 4.0, Material.SAND.createBlockData(), true)
         world.playSound(dot!!.location, Sound.BLOCK_SAND_STEP, 1.0f, 1.0f)
     }
@@ -173,7 +173,7 @@ class AbilityDollyAndDot : ActiveAbility<AbilityConceptDollyAndDot>(), Listener 
                 )?.let { result ->
                     val hitLocation = result.hitPosition.toLocation(world)
                     world.spawnParticle(
-                        Particle.EXPLOSION_NORMAL,
+                        Particle.EXPLOSION,
                         hitLocation,
                         1
                     )

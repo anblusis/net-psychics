@@ -153,7 +153,7 @@ class AbilityHoeSpin : ActiveAbility<AbilityConceptHoeSpin>(), Listener {
                             }
                         }?: run {
                             world.playSound(hitLocation, Sound.ITEM_TRIDENT_HIT_GROUND, 2.0F, 0.6F)
-                            world.spawnParticle(Particle.ITEM_CRACK, hitLocation, 16, 0.5, 0.5, 0.5, 0.1, ItemStack(Material.NETHERITE_HOE))
+                            world.spawnParticle(Particle.ITEM, hitLocation, 16, 0.5, 0.5, 0.5, 0.1, ItemStack(Material.NETHERITE_HOE))
                             remove()
                         }
                     }

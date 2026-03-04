@@ -89,7 +89,7 @@ class AbilityMortician : Ability<AbilityConceptMortician>(), Listener {
                                     2
                                 ), // 포화 3 지급
                                 PotionEffect(
-                                    PotionEffectType.INCREASE_DAMAGE,
+                                    PotionEffectType.STRENGTH,
                                     (concept.durationTime / 50.0).toInt(),
                                     1
                                 ), // 힘 2 지급

@@ -17,11 +17,14 @@ import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.*
 import org.bukkit.entity.Arrow
 import org.bukkit.entity.LivingEntity
+import org.bukkit.entity.SpectralArrow
+import org.bukkit.entity.TippedArrow
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityShootBowEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionType
+import org.bukkit.enchantments.Enchantment
 import kotlin.random.Random.Default.nextFloat
 
 // 화살을 발사시 직선으로 날아가는 화살 발사
@@ -55,7 +58,7 @@ class AbilityMagicArchery : Ability<AbilityConceptMagicArchery>(), Listener {
         val projectile = event.projectile
 
         if (projectile is Arrow) {
-            if (projectile.basePotionData.type != PotionType.UNCRAFTABLE || projectile.hasCustomEffects()) return
+            if (projectile is TippedArrow || projectile is SpectralArrow || projectile.hasCustomEffects()) return
 
             val player = esper.player
             val result = test()
@@ -113,15 +116,16 @@ class AbilityMagicArchery : Ability<AbilityConceptMagicArchery>(), Listener {
                         damageAmount *= projectile.damage / 2
                         damageAmount *= force
 
+                        val knockbackBonus = event.bow?.getEnchantmentLevel(Enchantment.KNOCKBACK)?.toDouble() ?: 0.0
+
                         target.psychicDamage(
                             this@AbilityMagicArchery,
                             damageType,
                             damageAmount,
                             player,
                             player.location,
-                            concept.knockback + projectile.knockbackStrength
+                            concept.knockback + knockbackBonus
                         )
-
 
                         target.addPotionEffects(projectile.customEffects)
 

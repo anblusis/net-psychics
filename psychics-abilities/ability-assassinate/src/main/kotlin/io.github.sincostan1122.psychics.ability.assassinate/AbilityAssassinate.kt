@@ -68,8 +68,6 @@ class AbilityAssassinate : ActiveAbility<AbilityConceptAssassinate>(), Listener 
     override fun onCast(event: PlayerEvent, action: WandAction, target: Any?) {
         val player = event.player
         if(concept.isskillon == 0) {
-            val world = esper.player.location.world
-            world.spawnParticle(Particle.SPELL_MOB_AMBIENT, esper.player.location, 30)
             player.setInvisible(true)
             /*
             esper.player.addPotionEffect(
@@ -80,7 +78,7 @@ class AbilityAssassinate : ActiveAbility<AbilityConceptAssassinate>(), Listener 
                 PotionEffect(PotionEffectType.SPEED, (concept.durationTime / 50.0).toInt(), 4, false, false, false)
             )
             esper.player.addPotionEffect(
-                PotionEffect(PotionEffectType.SLOW_DIGGING, (concept.durationTime / 50.0).toInt(), 20, false, false, false)
+                PotionEffect(PotionEffectType.MINING_FATIGUE, (concept.durationTime / 50.0).toInt(), 20, false, false, false)
             )
             esper.player.addPotionEffect(
                 PotionEffect(PotionEffectType.WEAKNESS, (concept.durationTime / 50.0).toInt(), 20, false, false, false)
@@ -93,16 +91,16 @@ class AbilityAssassinate : ActiveAbility<AbilityConceptAssassinate>(), Listener 
             world.spawnParticle(Particle.CLOUD, esper.player.location, 5)
 
             player.setInvisible(false)
-            esper.player.removePotionEffect(PotionEffectType.SLOW_DIGGING)
+            esper.player.removePotionEffect(PotionEffectType.MINING_FATIGUE)
             esper.player.removePotionEffect(PotionEffectType.WEAKNESS)
             esper.player.removePotionEffect(PotionEffectType.SPEED)
             // esper.player.removePotionEffect(PotionEffectType.INVISIBILITY)
 
             esper.player.addPotionEffect(
-                PotionEffect(PotionEffectType.INCREASE_DAMAGE, 60, 1, false, false, false)
+                PotionEffect(PotionEffectType.STRENGTH, 60, 1, false, false, false)
             )
             esper.player.addPotionEffect(
-                PotionEffect(PotionEffectType.FAST_DIGGING,60, 1, false, false, false)
+                PotionEffect(PotionEffectType.HASTE,60, 1, false, false, false)
             )
             concept.isskillon = 0
             cooldownTime = concept.cooldownTime

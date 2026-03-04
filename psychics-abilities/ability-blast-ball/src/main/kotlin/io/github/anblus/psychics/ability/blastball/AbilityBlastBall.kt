@@ -152,7 +152,7 @@ class AbilityBlastBall : ActiveAbility<AbilityConceptBlastBall>(), Listener {
                 val from = location.subtract(velocity.normalize().multiply(concept.ballSize))
                 val world = start.world
 
-                world.spawnParticle(Particle.SLIME, from, 1, 0.0, 0.0, 0.0, 0.01)
+                world.spawnParticle(Particle.ITEM_SLIME, from, 1, 0.0, 0.0, 0.0, 0.01)
 
                 val range = concept.ballSize * 1.5
                 if (location.getNearbyEntities(range, range, range).any { entity -> esper.player.hostileFilter().test(entity) }) {
@@ -214,7 +214,7 @@ class AbilityBlastBall : ActiveAbility<AbilityConceptBlastBall>(), Listener {
             val range = concept.blastRange
             world.playSound(location, Sound.BLOCK_SLIME_BLOCK_BREAK, 2.0F, 1.0F)
             world.playSound(location, Sound.ENTITY_GENERIC_EXPLODE, 0.6F, 1.2F)
-            world.spawnParticle(Particle.EXPLOSION_LARGE, location, 16, range / 2.0, range / 2.0, range / 2.0, 0.0)
+            world.spawnParticle(Particle.EXPLOSION_EMITTER, location, 16, range / 2.0, range / 2.0, range / 2.0, 0.0)
             location.getNearbyEntities(
                 range, range, range
             ).filter { entity -> esper.player.hostileFilter().test(entity) }.forEach { entity ->

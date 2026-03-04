@@ -47,7 +47,7 @@ class AbilityBerserker : ActiveAbility<AbilityConceptBerserker>(), Listener {
         val location = player.location.apply { y += 2.0 }
         val world = location.world
 
-        world.spawnParticle(Particle.VILLAGER_ANGRY, location.x, location.y, location.z, 4, 0.25, 0.0, 0.25, 0.0, null, true)
+        world.spawnParticle(Particle.ANGRY_VILLAGER, location.x, location.y, location.z, 4, 0.25, 0.0, 0.25, 0.0, null, true)
     }
 
     override fun onCast(event: PlayerEvent, action: WandAction, target: Any?) {

@@ -123,7 +123,7 @@ class AbilitySlingShot : Ability<AbilityConceptSlingShot>(), Listener {
 
                         val hitLocation = result.hitPosition.toLocation(world)
                         world.spawnParticle(
-                            Particle.BLOCK_DUST,
+                            Particle.BLOCK,
                             hitLocation,
                             32,
                             0.0,

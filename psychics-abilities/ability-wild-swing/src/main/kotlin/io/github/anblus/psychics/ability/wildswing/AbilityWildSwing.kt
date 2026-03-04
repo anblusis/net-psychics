@@ -21,9 +21,8 @@ import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.SoundCategory
+import org.bukkit.Tag
 import org.bukkit.attribute.Attribute
-import org.bukkit.enchantments.Enchantment
-import org.bukkit.entity.EntityCategory
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
@@ -50,7 +49,7 @@ import kotlin.math.sin
 class AbilityConceptWildSwing : AbilityConcept() {
 
     @Config
-    var rotationSpeedPerAttackSpeed = 0.25
+    var rotationSpeedPerAttackSpeed = 0.3
 
     @Config
     var targetSlownessTicks = 40
@@ -84,7 +83,8 @@ class AbilityConceptWildSwing : AbilityConcept() {
             text("능력 사용 시 주위로 도구를 휘둘러 근처 적들에게 피해를 줍니다."),
             text("적에게 피해를 줄 시 마나를 회복하고, 구속 효과를 부여합니다."),
             text("사용 중에는 이동이 제한되고, 받는 피해가 감소합니다."),
-            text("회전 속도와 피해량은 각각 도구의 공격 속도와 공격력에 비례합니다.")
+            text("회전 속도와 피해량은 각각 도구의 공격 속도와 공격력에 비례합니다."),
+            text("능력 재사용 시 능력을 즉시 종료합니다.")
         )
         wand = ItemStack(Material.IRON_HOE)
     }
@@ -104,7 +104,7 @@ class AbilityWildSwing : Ability<AbilityConceptWildSwing>(), Listener {
         val baseItemDamage: Double,
         var angle: Double,
         var remainingTicks: Int,
-        val hitSet: MutableSet<java.util.UUID>
+        val hittedEntity: MutableMap<java.util.UUID, Double> // UUID to remaining immunity angle (in radians)
     )
 
     private var session: SwingSession? = null
@@ -146,10 +146,7 @@ class AbilityWildSwing : Ability<AbilityConceptWildSwing>(), Listener {
             // player.sendActionBar(text("공격 속도가 있는 무기가 필요합니다."))
             return
         }
-        val baseDamage = getItemBaseDamage(item) ?: run {
-            // player.sendActionBar(text("공격력이 있는 무기가 필요합니다."))
-            return
-        }
+        val baseDamage = getItemBaseDamage(item)
 
         val result = test()
         if (result != TestResult.Success) {
@@ -197,10 +194,10 @@ class AbilityWildSwing : Ability<AbilityConceptWildSwing>(), Listener {
 
         val display = world.spawn(startLoc, ItemDisplay::class.java) {
             it.isPersistent = false
-            it.itemStack = item.clone()
+            it.setItemStack(item.clone())
         }
 
-        val baseLength = 1.0f
+        val baseLength = if (item.type == Material.TRIDENT) 2.0f else 1.0f
         val displayScale = (concept.range / baseLength).toFloat()
         display.transformation = Transformation(
             Vector3f(0.0f, 0.0f, 0.0f),
@@ -217,12 +214,12 @@ class AbilityWildSwing : Ability<AbilityConceptWildSwing>(), Listener {
             baseItemDamage = baseDamage,
             angle = 0.0,
             remainingTicks = durationTicks,
-            hitSet = mutableSetOf()
+            hittedEntity = mutableMapOf()
         )
 
         player.addPotionEffect(
             PotionEffect(
-                PotionEffectType.SLOW,
+                PotionEffectType.SLOWNESS,
                 durationTicks + 5,
                 concept.casterSlownessAmplifier,
                 true,
@@ -242,7 +239,7 @@ class AbilityWildSwing : Ability<AbilityConceptWildSwing>(), Listener {
         )
         player.addPotionEffect(
             PotionEffect(
-                PotionEffectType.SLOW_DIGGING,
+                PotionEffectType.MINING_FATIGUE,
                 durationTicks + 5,
                 4,
                 true,
@@ -269,10 +266,20 @@ class AbilityWildSwing : Ability<AbilityConceptWildSwing>(), Listener {
         }
 
         val rotationSpeed = active.attackSpeed * concept.rotationSpeedPerAttackSpeed
+
+        val it = active.hittedEntity.entries.iterator()
+        while (it.hasNext()) {
+            val entry = it.next()
+            if (entry.value <= rotationSpeed) {
+                it.remove()
+            } else {
+                entry.setValue(entry.value - rotationSpeed)
+            }
+        }
+
         active.angle -= rotationSpeed
         if (active.angle < 0) {
             active.angle += PI * 2
-            active.hitSet.clear()
             player.world.playSound(player.location, Sound.ITEM_CROSSBOW_LOADING_END, SoundCategory.PLAYERS, 2.0f, 0.8f)
         }
 
@@ -296,20 +303,34 @@ class AbilityWildSwing : Ability<AbilityConceptWildSwing>(), Listener {
         val outward = Vector3f(cos(active.angle).toFloat(), 0.0f, sin(active.angle).toFloat())
         val transform = active.display.transformation
         val offsetMultiplier = concept.range / 2
-        val translationDirection = Vector3f(outward).mul(-1f).add(Vector3f(-sin(active.angle).toFloat(), 0f, cos(active.angle).toFloat()))
-        if(active.display.itemStack?.type == Material.TRIDENT) {
-            // 삼지창은 이상하게 기준이 다름
-            translationDirection.y = 1f
+        val type = active.display.itemStack.type
+
+        val sin = sin(active.angle).toFloat()
+        val cos = cos(active.angle).toFloat()
+
+        val translationDirection = when (type) {
+            Material.TRIDENT -> {
+                Vector3f(outward).mul(-0.5f).add(Vector3f(-sin, 0f, cos).mul(2f)).add(0f, 0.5f, 0f)
+            }
+            else -> Vector3f(outward).mul(-1f).add(-sin, 0f, cos)
         }
-        val localForward = Vector3f(1.0f, 0.0f, 0.0f)
+
+        val localForward = when {
+            Tag.ITEMS_SPEARS.isTagged(type) -> Vector3f(0.0f, 0.0f, -1.0f)
+            else -> Vector3f(1.0f, 0.0f, 0.0f)
+        }
+
         val flatRotation = Quaternionf().rotateX((PI / 2).toFloat())
         val leftRotation = Quaternionf().rotateTo(localForward, outward).mul(flatRotation)
+
         active.display.transformation = Transformation(
             (translationDirection.clone() as Vector3f).mul(offsetMultiplier.toFloat()),
             leftRotation,
             transform.scale,
             transform.rightRotation
         )
+
+        translationDirection.normalize()
 
         val nearby = player.world.getNearbyLivingEntities(
             displayLoc.add(
@@ -318,13 +339,14 @@ class AbilityWildSwing : Ability<AbilityConceptWildSwing>(), Listener {
                 translationDirection.z * offsetMultiplier
             ),
             offsetMultiplier,
-            0.5,
+            1.0,
             offsetMultiplier
         ).filter { player.hostileFilter().test(it) }
 
         for (target in nearby) {
-            if (active.hitSet.add(target.uniqueId)) {
+            if (!active.hittedEntity.containsKey(target.uniqueId)) {
                 applyHit(player, target, active.baseItemDamage)
+                active.hittedEntity[target.uniqueId] = PI * 2
             }
         }
     }
@@ -341,7 +363,7 @@ class AbilityWildSwing : Ability<AbilityConceptWildSwing>(), Listener {
         )
         target.addPotionEffect(
             PotionEffect(
-                PotionEffectType.SLOW,
+                PotionEffectType.SLOWNESS,
                 concept.targetSlownessTicks,
                 concept.targetSlownessAmplifier,
                 true,
@@ -358,36 +380,39 @@ class AbilityWildSwing : Ability<AbilityConceptWildSwing>(), Listener {
         task = null
         session?.display?.remove()
         session = null
-        esper.player.removePotionEffect(PotionEffectType.SLOW)
+        esper.player.removePotionEffect(PotionEffectType.SLOWNESS)
         esper.player.removePotionEffect(PotionEffectType.WEAKNESS)
-        esper.player.removePotionEffect(PotionEffectType.SLOW_DIGGING)
+        esper.player.removePotionEffect(PotionEffectType.MINING_FATIGUE)
     }
 
     private fun getItemAttackSpeed(item: ItemStack): Double? {
-        val baseAttr = esper.player.getAttribute(Attribute.GENERIC_ATTACK_SPEED)?.baseValue ?: 4.0
-        val defaultMods = item.type.getDefaultAttributeModifiers(EquipmentSlot.HAND)[Attribute.GENERIC_ATTACK_SPEED]
-        val defaultSum = defaultMods.sumOf { it.amount }
-        val metaMods = item.itemMeta?.getAttributeModifiers(Attribute.GENERIC_ATTACK_SPEED)
-        val metaSum = metaMods?.sumOf { it.amount } ?: 0.0
-        val total = baseAttr + defaultSum + metaSum
+        val meta = item.itemMeta
+        val modifiers = if (meta.hasAttributeModifiers()) {
+            meta.getAttributeModifiers(Attribute.ATTACK_SPEED)
+        } else {
+            item.type.getDefaultAttributeModifiers(EquipmentSlot.HAND).get(Attribute.ATTACK_SPEED)
+        }
+        val modifiersSum = modifiers?.sumOf { it.amount } ?: 0.0
+        if (modifiersSum == 0.0 && !Tag.ITEMS_HOES.isTagged(item.type)) return null
 
-        return total.takeIf { it > 0.0 }
+        val playerBase = esper.player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue ?: 4.0
+        val total = playerBase + modifiersSum
+
+        return total
     }
 
-    private fun getItemBaseDamage(item: ItemStack): Double? {
-        val baseAttr = esper.player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)?.baseValue ?: 1.0
-        val defaultMods = item.type.getDefaultAttributeModifiers(EquipmentSlot.HAND)[Attribute.GENERIC_ATTACK_DAMAGE]
-        val defaultSum = defaultMods.sumOf { it.amount }
-        val metaMods = item.itemMeta?.getAttributeModifiers(Attribute.GENERIC_ATTACK_DAMAGE)
-        val metaSum = metaMods?.sumOf { it.amount } ?: 0.0
-        val sharpnessLevel = item.itemMeta?.getEnchantLevel(Enchantment.DAMAGE_ALL) ?: 0
-        val sharpnessBonus = if (sharpnessLevel > 0) {
-            Enchantment.DAMAGE_ALL.getDamageIncrease(sharpnessLevel, EntityCategory.NONE).toDouble()
+    private fun getItemBaseDamage(item: ItemStack): Double {
+        val meta = item.itemMeta
+        val modifiers = if (meta.hasAttributeModifiers()) {
+            meta.getAttributeModifiers(Attribute.ATTACK_DAMAGE)
         } else {
-            0.0
+            item.type.getDefaultAttributeModifiers(EquipmentSlot.HAND).get(Attribute.ATTACK_DAMAGE)
         }
-        val total = baseAttr + defaultSum + metaSum + sharpnessBonus
 
-        return total.takeIf { it > 0.0 }
+        val baseAttr = esper.player.getAttribute(Attribute.ATTACK_DAMAGE)?.baseValue ?: 1.0
+        val modifiersSum = modifiers?.sumOf { it.amount } ?: 0.0
+        val total = baseAttr + modifiersSum
+
+        return total
     }
 }

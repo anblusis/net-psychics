@@ -138,11 +138,11 @@ class AbilityWindShot : ActiveAbility<AbilityConceptWindShot>(), Listener {
                     world.spawnParticle(
                         Particle.SNOWFLAKE,
                         hitLocation,
-                        24,
+                        6,
                         0.2,
                         0.2,
                         0.2,
-                        1.0
+                        0.2
                     )
 
                     rayTraceResult.hitEntity?.let { entity ->

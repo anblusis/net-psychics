@@ -121,7 +121,7 @@ class PsychicConcept internal constructor() {
 
         val ret = ConfigSupport.compute(this, config)
 
-        val maxHealthBonus = Bukkit.spigot().spigotConfig.getDouble("attribute.maxHealth", 2048.0 - 20.0)
+        val maxHealthBonus = 2048.0 - 20.0
 
         if (healthBonus > maxHealthBonus) {
             healthBonus = maxHealthBonus

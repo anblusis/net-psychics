@@ -287,15 +287,15 @@ class AbilityFalconer : ActiveAbility<AbilityConceptFalconer>(), Listener {
 
                 if (random == "거대한") {
                     size = 5
-                    getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = concept.largePhantomMaxHealth
+                    getAttribute(Attribute.MAX_HEALTH)?.baseValue = concept.largePhantomMaxHealth
                 } else {
-                    getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = 0.1
+                    getAttribute(Attribute.MAX_HEALTH)?.baseValue = 0.1
                 }
 
-                getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)?.baseValue = esper.getStatistic(concept.phantomAttackDamage)
-                getAttribute(Attribute.GENERIC_FOLLOW_RANGE)?.baseValue = concept.range * 2
+                getAttribute(Attribute.ATTACK_DAMAGE)?.baseValue = esper.getStatistic(concept.phantomAttackDamage)
+                getAttribute(Attribute.FOLLOW_RANGE)?.baseValue = concept.range * 2
 
-                health = getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue!!
+                health = getAttribute(Attribute.MAX_HEALTH)?.baseValue!!
 
                 customName = "${player.name}의 $random 팬텀"
                 isCustomNameVisible = true

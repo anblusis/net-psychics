@@ -42,6 +42,9 @@ class AbilityConceptStormBreaker : AbilityConcept() {
     var lightningRadius = 2.0
 
     @Config
+    var copper = Damage.of(DamageType.MELEE, EsperAttribute.ATTACK_DAMAGE to 1.5)
+
+    @Config
     var iron = Damage.of(DamageType.MELEE, EsperAttribute.ATTACK_DAMAGE to 2.0)
 
     @Config
@@ -85,11 +88,13 @@ class AbilityConceptStormBreaker : AbilityConcept() {
     }
 
     override fun onRenderTooltip(tooltip: TooltipBuilder, stats: (EsperStatistic) -> Double) {
+        tooltip.stats(text("구리").color(NamedTextColor.WHITE), copper) { NamedTextColor.GOLD to "copper" }
         tooltip.stats(text("철").color(NamedTextColor.WHITE), iron) { NamedTextColor.WHITE to "iron" }
-        tooltip.stats(text("금").color(NamedTextColor.WHITE), golden) { NamedTextColor.GOLD to "golden" }
+        tooltip.stats(text("금").color(NamedTextColor.WHITE), golden) { NamedTextColor.YELLOW to "golden" }
         tooltip.stats(text("다이아몬드").color(NamedTextColor.WHITE), diamond) { NamedTextColor.AQUA to "diamond" }
         tooltip.stats(text("네더라이트").color(NamedTextColor.WHITE), netherite) { NamedTextColor.RED to "netherite" }
 
+        tooltip.template("copper", stats(copper.stats))
         tooltip.template("iron", stats(iron.stats))
         tooltip.template("golden", stats(golden.stats))
         tooltip.template("diamond", stats(diamond.stats))
@@ -98,6 +103,7 @@ class AbilityConceptStormBreaker : AbilityConcept() {
 
     fun findDamage(type: Material): Damage? {
         return when (type) {
+            Material.COPPER_AXE -> copper
             Material.IRON_AXE -> iron
             Material.GOLDEN_AXE -> golden
             Material.DIAMOND_AXE -> diamond
@@ -146,6 +152,7 @@ class AbilityStormBreaker : Ability<AbilityConceptStormBreaker>() {
 
     private fun updateCooldown(cooldownTicks: Int) {
         val player = esper.player
+        player.setCooldown(Material.COPPER_AXE, cooldownTicks)
         player.setCooldown(Material.IRON_AXE, cooldownTicks)
         player.setCooldown(Material.GOLDEN_AXE, cooldownTicks)
         player.setCooldown(Material.DIAMOND_AXE, cooldownTicks)
@@ -274,6 +281,7 @@ class AbilityStormBreaker : Ability<AbilityConceptStormBreaker>() {
                             headPose = EulerAngle(0.0, 0.0, (-180.0).toRadians())
                         }
                         hittedAxe = axe
+                        durationTime = concept.durationTime
                     }
 
                     val particleVector = Vector()
@@ -285,7 +293,7 @@ class AbilityStormBreaker : Ability<AbilityConceptStormBreaker>() {
                             z += nextDouble() - 0.5
                         }
                         world.spawnParticle(
-                            Particle.ITEM_CRACK,
+                            Particle.ITEM,
                             hitLocation,
                             0,
                             particleVector.x,
@@ -293,7 +301,6 @@ class AbilityStormBreaker : Ability<AbilityConceptStormBreaker>() {
                             particleVector.z,
                             1.0,
                             item
-
                         )
                     }
 
@@ -303,7 +310,7 @@ class AbilityStormBreaker : Ability<AbilityConceptStormBreaker>() {
                     val knockback = concept.knockback
                     world.strikeLightningEffect(hitLocation)
                     val potionEffect = PotionEffect(
-                        PotionEffectType.SLOW,
+                        PotionEffectType.SLOWNESS,
                         concept.slowDurationTicks,
                         concept.slowAmplifier,
                         false,

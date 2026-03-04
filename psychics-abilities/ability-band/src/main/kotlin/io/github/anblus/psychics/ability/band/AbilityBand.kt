@@ -303,7 +303,7 @@ class AbilityBand : ActiveAbility<AbilityConceptBand>(), Listener {
                             stat = arrayOf(concept.vocalistHealth, concept.vocalistDamage, concept.vocalistMoveSpeed)
                             handItem = ItemStack(Material.LIGHTNING_ROD)
                             monster = (world.spawnEntity(location, EntityType.ZOMBIE) as Zombie).apply {
-                                getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.baseValue = 0.3
+                                getAttribute(Attribute.KNOCKBACK_RESISTANCE)?.baseValue = 0.3
                                 setAdult()
                             }
                         }
@@ -331,7 +331,7 @@ class AbilityBand : ActiveAbility<AbilityConceptBand>(), Listener {
                             stat = arrayOf(concept.drummerHealth, concept.drummerDamage, concept.drummerMoveSpeed)
                             handItem = ItemStack(Material.TRIPWIRE_HOOK)
                             monster = (world.spawnEntity(location, EntityType.WITHER_SKELETON) as WitherSkeleton).apply {
-                                getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.baseValue = 0.6
+                                getAttribute(Attribute.KNOCKBACK_RESISTANCE)?.baseValue = 0.6
                             }
                         }
                     }
@@ -351,12 +351,12 @@ class AbilityBand : ActiveAbility<AbilityConceptBand>(), Listener {
                             itemInMainHandDropChance = 0f
                         }
 
-                        mob.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = esper.getStatistic(stat[0] as EsperStatistic)
-                        mob.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)?.baseValue = esper.getStatistic(stat[1] as EsperStatistic)
-                        mob.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)?.baseValue = stat[2] as Double
-                        mob.getAttribute(Attribute.GENERIC_FOLLOW_RANGE)?.baseValue = concept.range * 2
+                        mob.getAttribute(Attribute.MAX_HEALTH)?.baseValue = esper.getStatistic(stat[0] as EsperStatistic)
+                        mob.getAttribute(Attribute.ATTACK_DAMAGE)?.baseValue = esper.getStatistic(stat[1] as EsperStatistic)
+                        mob.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = stat[2] as Double
+                        mob.getAttribute(Attribute.FOLLOW_RANGE)?.baseValue = concept.range * 2
 
-                        mob.health = mob.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue!!
+                        mob.health = mob.getAttribute(Attribute.MAX_HEALTH)?.baseValue!!
 
                         mob.customName = "${player.name} 악단의 $name"
                         mob.isCustomNameVisible = true
@@ -412,7 +412,7 @@ class AbilityBand : ActiveAbility<AbilityConceptBand>(), Listener {
         } else if (entity is Stray) {
             (arrow as Arrow).apply {
                 color = Color.GRAY
-                addCustomEffect(PotionEffect(PotionEffectType.SLOW, concept.bassistArrowSlowDuration, 3, false, false), true)
+                addCustomEffect(PotionEffect(PotionEffectType.SLOWNESS, concept.bassistArrowSlowDuration, 3, false, false), true)
                 damage = esper.getStatistic(concept.bassistDamage)
             }
             psychic.runTask({

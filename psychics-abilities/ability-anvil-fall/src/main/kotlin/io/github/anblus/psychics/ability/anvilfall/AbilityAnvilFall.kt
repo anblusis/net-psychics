@@ -141,7 +141,7 @@ class AbilityAnvilFall : ActiveAbility<AbilityConceptAnvilFall>(), Listener {
 
         val range = concept.anvilFallingRange.toDouble()
         world.playSound(loc, Sound.BLOCK_ANVIL_LAND, 0.5f, 0.7f)
-        world.spawnParticle(Particle.BLOCK_CRACK, loc, 18, range, 1.0, range, belowBlock.blockData)
+        world.spawnParticle(Particle.BLOCK, loc, 18, range, 1.0, range, belowBlock.blockData)
 
         val damage = concept.damage ?: return
         val damageType = damage.type
@@ -182,7 +182,7 @@ class AbilityAnvilFall : ActiveAbility<AbilityConceptAnvilFall>(), Listener {
 
             if (durability < 0.0) break
 
-            block.world.spawnParticle(Particle.BLOCK_CRACK, block.location.clone().add(0.5, 0.5, 0.5), 10, 0.25, 0.25, 0.25, 0.0, block.blockData)
+            block.world.spawnParticle(Particle.BLOCK, block.location.clone().add(0.5, 0.5, 0.5), 10, 0.25, 0.25, 0.25, 0.0, block.blockData)
             block.breakNaturally(ItemStack(Material.AIR))
         }
 

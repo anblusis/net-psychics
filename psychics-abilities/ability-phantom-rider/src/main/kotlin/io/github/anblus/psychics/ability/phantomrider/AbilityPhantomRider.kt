@@ -145,7 +145,7 @@ class AbilityPhantomRider : Ability<AbilityConceptPhantomRider>(), Listener {
         mount = player.world.spawn(spawnLoc, ArmorStand::class.java).apply {
             isVisible = false
             isSmall = true
-            getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = health
+            getAttribute(Attribute.MAX_HEALTH)?.baseValue = health
             this.health = health
         }
 
@@ -153,7 +153,7 @@ class AbilityPhantomRider : Ability<AbilityConceptPhantomRider>(), Listener {
         phantom = player.world.spawn(spawnLoc, Phantom::class.java).apply {
             setShouldBurnInDay(false)
             setAI(false)
-            getAttribute(Attribute.GENERIC_MAX_HEALTH)?.baseValue = health
+            getAttribute(Attribute.MAX_HEALTH)?.baseValue = health
             this.health = health
         }
 

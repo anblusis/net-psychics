@@ -114,7 +114,7 @@ class AbilityBomber : ActiveAbility<AbilityConceptBomber>(), Listener {
             val world = location.world
 
             val r = max(1.0, concept.range - 2.0)
-            world.spawnParticle(Particle.EXPLOSION_HUGE, location, (r * r).toInt(), r, r, r, 0.0, null, true)
+            world.spawnParticle(Particle.EXPLOSION_EMITTER, location, (r * r).toInt(), r, r, r, 0.0, null, true)
             world.playSound(location, Sound.ENTITY_GENERIC_EXPLODE, 2.0F, 1.0F)
 
             val damage = concept.damage!!

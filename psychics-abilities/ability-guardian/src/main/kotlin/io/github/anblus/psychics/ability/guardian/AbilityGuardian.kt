@@ -71,7 +71,7 @@ class AbilityGuardian : ActiveAbility<AbilityConceptGuardian>(), Listener {
 
     override fun onChannel(channel: Channel) {
         esper.player.addPotionEffect(
-            PotionEffect(PotionEffectType.SLOW, 5, 4, false, false, false)
+            PotionEffect(PotionEffectType.SLOWNESS, 5, 4, false, false, false)
         )
     }
 
@@ -125,7 +125,7 @@ class AbilityGuardian : ActiveAbility<AbilityConceptGuardian>(), Listener {
                                         concept.defaultHealing + esper.getStatistic(concept.healCoefficient)
                                     )
                                     entity.addPotionEffect(
-                                        PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 40, 0, false, false, false)
+                                        PotionEffect(PotionEffectType.RESISTANCE, 40, 0, false, false, false)
                                     )
                                 }
                             }

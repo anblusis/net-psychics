@@ -257,7 +257,7 @@ class AbilityPumpkinGhost : Ability<AbilityConceptPumpkinGhost>(), Listener {
             val world = location.world
             val range = concept.explosionRange
             world.playSound(location, Sound.ENTITY_GENERIC_EXPLODE, 1.5F, 1.0F)
-            world.spawnParticle(Particle.EXPLOSION_LARGE, location, 4, range / 2, range / 2, range / 2, 0.0)
+            world.spawnParticle(Particle.EXPLOSION_EMITTER, location, 4, range / 2, range / 2, range / 2, 0.0)
             location.getNearbyEntities(
                 range, range, range
             ).filter { entity -> esper.player.hostileFilter().test(entity) }.forEach { entity ->

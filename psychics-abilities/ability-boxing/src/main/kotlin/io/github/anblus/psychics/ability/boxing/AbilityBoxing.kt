@@ -142,7 +142,7 @@ class AbilityBoxing : Ability<AbilityConceptBoxing>(), Listener {
                         PotionEffect(PotionEffectType.BLINDNESS, 30, 4)
                     )
                     entity.addPotionEffect(
-                        PotionEffect(PotionEffectType.SLOW, 30, 4)
+                        PotionEffect(PotionEffectType.SLOWNESS, 30, 4)
                     )
                     world.spawnFirework(
                         loc,

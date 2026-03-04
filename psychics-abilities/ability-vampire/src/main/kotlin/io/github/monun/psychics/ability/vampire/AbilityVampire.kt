@@ -116,7 +116,7 @@ class AbilityVampire : Ability<AbilityConceptVampire>(), Listener {
                             val location = item.location.apply { y = box.centerY }
                             val world = location.world
 
-                            world.spawnParticle(Particle.ITEM_CRACK, location, 32, 0.0, 0.0, 0.0, 0.1, itemStack)
+                            world.spawnParticle(Particle.ITEM, location, 32, 0.0, 0.0, 0.0, 0.1, itemStack)
                             world.playSound(location, Sound.ENTITY_ITEM_PICKUP, 1.0F, 0.1F)
                         }
                     }

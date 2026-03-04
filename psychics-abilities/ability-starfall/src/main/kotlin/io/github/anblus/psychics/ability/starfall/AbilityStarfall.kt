@@ -101,7 +101,7 @@ class AbilityStarfall : ActiveAbility<AbilityConceptStarfall>(), Listener {
         exhaust()
 
         // 시작 이펙트 & 사운드
-        world.spawnParticle(Particle.FIREWORKS_SPARK, player.location, 80, 0.8, 0.3, 0.8, 0.02)
+        world.spawnParticle(Particle.FIREWORK, player.location, 80, 0.8, 0.3, 0.8, 0.02)
         world.playSound(player.location, Sound.BLOCK_BEACON_ACTIVATE, SoundCategory.PLAYERS, 0.8f, 1.0f)
 
         val d = player.location.clone().apply { y = hit.y }.distance(hit)
@@ -149,7 +149,7 @@ class AbilityStarfall : ActiveAbility<AbilityConceptStarfall>(), Listener {
         targetLoc.direction = targetDirection
 
         TrailSupport.trail(startLoc, targetLoc.clone().add(targetLoc.direction.clone().multiply(10)), 1.0) { w, x, y, z ->
-            w.spawnParticle(Particle.SPELL_WITCH, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
+            w.spawnParticle(Particle.WITCH, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
         }
 
         // FakeEntity(별) 준비
@@ -234,7 +234,7 @@ class AbilityStarfall : ActiveAbility<AbilityConceptStarfall>(), Listener {
 
             // 사운드 & 파티클
             world.playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 0.8f, 1.2f)
-            world.spawnParticle(Particle.EXPLOSION_NORMAL, loc, 1, 0.0, 0.0, 0.0, 0.0)
+            world.spawnParticle(Particle.EXPLOSION, loc, 1, 0.0, 0.0, 0.0, 0.0)
             world.spawnParticle(Particle.CRIT, loc, 12, 0.6, 0.3, 0.6, 0.02)
             world.spawnParticle(Particle.GLOW, loc, 6, 0.5, 0.2, 0.5, 0.01)
 
@@ -262,7 +262,7 @@ class AbilityStarfall : ActiveAbility<AbilityConceptStarfall>(), Listener {
             val particleCount = (power * 4).toInt()
             val particleRadius = power * 0.5
 
-            world.spawnParticle(Particle.EXPLOSION_NORMAL, center, particleCount, particleRadius, particleRadius, particleRadius, 0.1)
+            world.spawnParticle(Particle.EXPLOSION, center, particleCount, particleRadius, particleRadius, particleRadius, 0.1)
 
             // 바닐라는 16x16x16 = 4096개 광선 사용
             val rays = 8

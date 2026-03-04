@@ -538,7 +538,7 @@ class Psychic internal constructor(
         val health = player.health
 
         if (health > 0.0) {
-            val maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH)?.value ?: 20.0
+            val maxHealth = player.getAttribute(Attribute.MAX_HEALTH)?.value ?: 20.0
             player.health =
                 (player.health + concept.healthRegenPerSecond * (elapsedTime / 1000.0)).coerceIn(
                     0.0,

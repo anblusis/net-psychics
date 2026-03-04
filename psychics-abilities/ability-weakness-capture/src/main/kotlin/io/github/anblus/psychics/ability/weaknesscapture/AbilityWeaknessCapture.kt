@@ -111,7 +111,7 @@ class AbilityWeaknessCapture : ActiveAbility<AbilityConceptWeaknessCapture>(), L
 
         player.addPotionEffect(
             PotionEffect(
-                PotionEffectType.SLOW, 2, 4, false, false, false
+                PotionEffectType.SLOWNESS, 2, 4, false, false, false
             )
         )
 
@@ -168,7 +168,7 @@ class AbilityWeaknessCapture : ActiveAbility<AbilityConceptWeaknessCapture>(), L
 
         val playParticle: (Location) -> Unit = { loc ->
             if (isChannel) {
-                player.spawnParticle(Particle.SPELL_INSTANT, loc, 1, 0.0, 0.0, 0.0, 0.0)
+                player.spawnParticle(Particle.INSTANT_EFFECT, loc, 1, 0.0, 0.0, 0.0, 0.0, Particle.Spell(Color.WHITE, 1.0f))
             } else {
                 world.spawnParticle(Particle.END_ROD, loc, 1, 0.0, 0.0, 0.0, 0.0)
             }
@@ -213,11 +213,11 @@ class AbilityWeaknessCapture : ActiveAbility<AbilityConceptWeaknessCapture>(), L
             val head = captured.entity.eyeLocation.clone().add(0.0, 0.5, 0.0)
 
             val option = if (captured.hasLookedAtPlayer)
-                Particle.DustTransition(Color.fromRGB(80, 255, 80), Color.fromRGB(80, 255, 80), 2.5f)
+                Particle.DustOptions(Color.fromRGB(80, 255, 80), 2.5f)
             else
-                Particle.DustTransition(Color.fromRGB(255, 80, 80), Color.fromRGB(255, 80, 80), 2.5f)
+                Particle.DustOptions(Color.fromRGB(255, 80, 80), 2.5f)
 
-            player.spawnParticle(Particle.DUST_COLOR_TRANSITION, head, 1, 0.2, 0.2, 0.2, 0.1, option)
+            player.spawnParticle(Particle.DUST, head, 1, 0.2, 0.2, 0.2, 0.1, option)
         }
     }
 

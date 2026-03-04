@@ -174,7 +174,7 @@ class AbilityDreamWorld : ActiveAbility<AbilityConceptDreamWorld>(), Listener {
                     if (entity.location.add(0.0, -1.0, 0.0).block.location.toVector() in rainbowVector && entity.location.add(0.0, -1.0, 0.0).block.type in rainbowBlockList) {
                         if (player.hostileFilter().test(entity) && entity !is Sheep) {
                             entity.psychicDamage()
-                            entity.addPotionEffect(PotionEffect(PotionEffectType.SLOW, 20, 1))
+                            entity.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 20, 1))
                         } else entity.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 20, 2))
                     }
                 }

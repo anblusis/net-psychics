@@ -310,7 +310,7 @@ class AbilityShackle : Ability<AbilityConceptShackle>(), Listener {
                         untie()
                     } else {
                         durationTick --
-                        entity.addPotionEffect(PotionEffect(PotionEffectType.SLOW, 3, 4))
+                        entity.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 3, 4))
                         fakeWeb.forEachIndexed { i, web ->
                             web.moveTo(entity.boundingBox.center.toLocation(entity.world).add(fakeWebLocation[i]).apply {
                                 yaw += fakeWebYaw[i]

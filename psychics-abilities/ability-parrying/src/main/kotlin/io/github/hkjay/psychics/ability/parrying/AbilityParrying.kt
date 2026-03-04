@@ -115,7 +115,7 @@ class AbilityParrying : Ability<AbilityConceptParrying>(), Listener {
                         )
                     }
                 }
-                esper.player.addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE,
+                esper.player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE,
                     (concept.resistanceTime/50).toInt(),100,false,false,false))
                 durationTime = 0
                 cooldownTime = 0
@@ -141,9 +141,9 @@ class AbilityParrying : Ability<AbilityConceptParrying>(), Listener {
                     cooldownTime = concept.cooldownTime
                     item?.apply {
                         val losingDurability = when{
-                            getEnchantmentLevel(Enchantment.DURABILITY) == 1 -> concept.lossDurability * 0.75
-                            getEnchantmentLevel(Enchantment.DURABILITY) == 2 -> concept.lossDurability * 0.5
-                            getEnchantmentLevel(Enchantment.DURABILITY) == 3 -> concept.lossDurability * 0.25
+                            getEnchantmentLevel(Enchantment.UNBREAKING) == 1 -> concept.lossDurability * 0.75
+                            getEnchantmentLevel(Enchantment.UNBREAKING) == 2 -> concept.lossDurability * 0.5
+                            getEnchantmentLevel(Enchantment.UNBREAKING) == 3 -> concept.lossDurability * 0.25
                             else -> concept.lossDurability
                         }
                         durability = (((durability + losingDurability.toShort()).toShort()))

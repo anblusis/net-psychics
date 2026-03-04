@@ -76,10 +76,10 @@ class AbilityIllusionBeam : ActiveAbility<AbilityConceptIllusionBeam>(), Listene
         hasCharged = true
         val player = esper.player
         val world = player.world
-        world.spawnParticle(Particle.SPELL_WITCH, player.boundingBox.center.toLocation(world), 10, 0.5, 0.5, 0.5, 0.1)
+        world.spawnParticle(Particle.WITCH, player.boundingBox.center.toLocation(world), 10, 0.5, 0.5, 0.5, 0.1)
         world.playSound(player.location, Sound.BLOCK_BEACON_DEACTIVATE, 2.0f, 0.2f)
 
-        player.addPotionEffect(PotionEffect(PotionEffectType.SLOW, (concept.castingTime / 50).toInt(), 4))
+        player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, (concept.castingTime / 50).toInt(), 4))
     }
 
     override fun onCast(event: PlayerEvent, action: WandAction, target: Any?) {
@@ -148,7 +148,7 @@ class AbilityIllusionBeam : ActiveAbility<AbilityConceptIllusionBeam>(), Listene
                     changeEntity(hitEntity)
                 }
                 world.playSound(start, Sound.BLOCK_BEACON_ACTIVATE, 2.0f, 2.0f)
-                world.spawnParticle(Particle.SPELL_MOB_AMBIENT, start, 10, 0.5, 0.5, 0.5, 0.1)
+                world.spawnParticle(Particle.ENTITY_EFFECT, start, 10, 0.5, 0.5, 0.5, 0.1,Color.fromRGB(Default.nextInt(255), Default.nextInt(255),Default.nextInt(255)))
                 remove()
             }
 

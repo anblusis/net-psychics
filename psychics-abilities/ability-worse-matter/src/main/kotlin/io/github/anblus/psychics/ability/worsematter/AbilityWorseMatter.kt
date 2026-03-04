@@ -80,7 +80,7 @@ class AbilityWorseMatter : ActiveAbility<AbilityConceptWorseMatter>(), Listener 
 
             val to = result.hitPosition.toLocation(world)
             TrailSupport.trail(start, to, 0.3) { w, x, y, z ->
-                w.spawnParticle(Particle.SPELL_WITCH, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
+                w.spawnParticle(Particle.WITCH, x, y, z, 1, 0.0, 0.0, 0.0, 0.0)
             }
             world.spawnParticle(Particle.ASH, target.location, 32, 0.8, 1.0, 0.8, 0.0)
             world.playSound(

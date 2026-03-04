@@ -12,6 +12,7 @@ import io.github.monun.tap.event.EntityProvider
 import io.github.monun.tap.event.TargetEntity
 import io.github.monun.tap.task.TickerTask
 import net.kyori.adventure.text.Component.empty
+import org.bukkit.Color
 import org.bukkit.Material
 import org.bukkit.Particle
 import org.bukkit.Sound
@@ -77,12 +78,12 @@ class AbilitySnowGatling : ActiveAbility<AbilityConceptSnowGatling>(), Listener 
                 val concept = concept
 
                 if (nextDouble() < concept.slowdownChance) {
-                    var slow = entity.getPotionEffect(PotionEffectType.SLOW)
+                    var slow = entity.getPotionEffect(PotionEffectType.SLOWNESS)
 
                     if (slow != null) {
                         slow.withAmplifier(min(concept.maxSlowLevel, slow.amplifier + 1))
                     } else {
-                        slow = PotionEffect(PotionEffectType.SLOW, concept.slowTicks, 0, false, false, true)
+                        slow = PotionEffect(PotionEffectType.SLOWNESS, concept.slowTicks, 0, false, false, true)
                     }
 
                     entity.addPotionEffect(slow)
@@ -90,7 +91,7 @@ class AbilitySnowGatling : ActiveAbility<AbilityConceptSnowGatling>(), Listener 
                     val world = location.world
 
                     @Suppress("DEPRECATION")
-                    world.spawnParticle(Particle.SPELL_INSTANT, location, 100)
+                    world.spawnParticle(Particle.INSTANT_EFFECT, location, 100, Particle.Spell(Color.WHITE, 1.0f))
                 }
             }
         }

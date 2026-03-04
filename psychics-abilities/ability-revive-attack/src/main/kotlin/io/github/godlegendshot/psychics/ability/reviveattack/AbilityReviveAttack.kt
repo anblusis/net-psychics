@@ -171,7 +171,7 @@ class AbilityReviveAttack : ActiveAbility<AbilityConceptReviveAttack>(), Listene
         if (durationTime > 0L) {
             event.isCancelled = true
             val potion1 = PotionEffect (
-                PotionEffectType.INCREASE_DAMAGE,
+                PotionEffectType.STRENGTH,
                 ticks,
                 concept.strengthAmplifier,
                 true,

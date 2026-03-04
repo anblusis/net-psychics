@@ -122,7 +122,7 @@ class AbilityPaddywhack : Ability<AbilityConceptPaddywhack>(), Listener {
 
         psychic.runTaskTimer({
             if (isRaged) player.world.spawnParticle(Particle.DUST_COLOR_TRANSITION, player.location, 16, 0.4, 1.5, 0.4, 0.0, Particle.DustTransition(Color.RED, Color.RED, 1.0f))
-            if ((stress.toDouble() * 0.1).toInt() != 0) player.world.spawnParticle(Particle.VILLAGER_ANGRY, player.location.apply { y += 2.0 }, (stress.toDouble() * 0.1).toInt(), 0.4, 0.0, 0.4, 0.2)
+            if ((stress.toDouble() * 0.1).toInt() != 0) player.world.spawnParticle(Particle.ANGRY_VILLAGER, player.location.apply { y += 2.0 }, (stress.toDouble() * 0.1).toInt(), 0.4, 0.0, 0.4, 0.2)
         }, 0L, 5L)
     }
 

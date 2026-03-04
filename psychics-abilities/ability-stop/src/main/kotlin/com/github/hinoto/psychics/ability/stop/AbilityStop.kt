@@ -49,8 +49,8 @@ class AbilityStop : Ability<AbilityConceptStop>(), Listener {
                     esper.player.sendActionBar(text("멈춰!"))
                     damager.sendActionBar(text("${esper.player}: 멈춰!"))
                     damager.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, concept.ticks, 4))
-                    damager.addPotionEffect(PotionEffect(PotionEffectType.SLOW, concept.ticks, 4))
-                    damager.addPotionEffect(PotionEffect(PotionEffectType.SLOW_DIGGING, concept.ticks, 4))
+                    damager.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, concept.ticks, 4))
+                    damager.addPotionEffect(PotionEffect(PotionEffectType.MINING_FATIGUE, concept.ticks, 4))
                     damager.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, concept.ticks, 4))
                     damager.addPotionEffect(PotionEffect(PotionEffectType.GLOWING, concept.ticks, 4))
                     cooldownTime = concept.cooldownTime

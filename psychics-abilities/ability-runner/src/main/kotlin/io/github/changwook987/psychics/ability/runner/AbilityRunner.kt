@@ -62,7 +62,7 @@ class AbilityRunner : ActiveAbility<AbilityConceptRunner>(), Listener {
         val player = event.player
 
         player.apply {
-            removePotionEffect(PotionEffectType.SLOW)
+            removePotionEffect(PotionEffectType.SLOWNESS)
 
             addPotionEffect(
                 PotionEffect(
@@ -88,7 +88,7 @@ class AbilityRunner : ActiveAbility<AbilityConceptRunner>(), Listener {
             val loc = Vector(cos(angle), 0.0, sin(angle)).multiply(radius.times(2))
             esper.player.world.apply {
                 spawnParticle(
-                    Particle.REDSTONE,
+                    Particle.DUST,
                     esper.player.location.add(loc),
                     1,
                     Particle.DustOptions(color, 1.0f)

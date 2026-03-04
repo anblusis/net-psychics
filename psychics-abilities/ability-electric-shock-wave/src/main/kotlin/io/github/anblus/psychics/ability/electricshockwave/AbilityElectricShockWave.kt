@@ -77,6 +77,10 @@ class AbilityConceptElectricShockWave : AbilityConcept() {
 class AbilityElectricShockWave : ActiveAbility<AbilityConceptElectricShockWave>(), Listener {
     private var timer: TickerTask? = null
 
+    override fun onDisable() {
+        cancel()
+    }
+
     override fun onChannel(channel: Channel) {
         val player = esper.player
         val world = player.world
@@ -91,7 +95,7 @@ class AbilityElectricShockWave : ActiveAbility<AbilityConceptElectricShockWave>(
         )
         world.spawnParticle(Particle.WAX_ON, location.apply { y += 1.0 }, 2, 0.4, 0.0, 0.4, 0.4)
         player.addPotionEffect(
-            PotionEffect(PotionEffectType.SLOW, 2, 4)
+            PotionEffect(PotionEffectType.SLOWNESS, 2, 4)
         )
     }
 
@@ -193,10 +197,13 @@ class AbilityElectricShockWave : ActiveAbility<AbilityConceptElectricShockWave>(
             }
 
             to?.let { to ->
-                if (isFirst) start.add(to.clone().toVector().normalize().multiply(thickness * 4))
+                if (isFirst) start.add(to.toVector().normalize().multiply(thickness * 4))
                 TrailSupport.trail(start, to, thickness) { w, x, y, z ->
-                    if (nextInt(0, 2) == 0) w.spawnParticle(Particle.DUST_COLOR_TRANSITION, x, y, z, (thickness * 10).pow(2).toInt(), thickness, thickness, thickness, 0.01, Particle.DustTransition(Color.fromRGB(255, 178, 0), Color.fromRGB(255, 203, 66), 2.0f))
-                    else w.spawnParticle(Particle.DUST_COLOR_TRANSITION, x, y, z, (thickness * 10).pow(2).toInt(), thickness, thickness, thickness, 0.01, Particle.DustTransition(Color.fromRGB(255, 203, 66), Color.fromRGB(255, 178, 0), 2.0f))
+                    val option = if (nextInt(0, 2) == 0)
+                        Particle.DustTransition(Color.fromRGB(255, 178, 0), Color.fromRGB(255, 203, 66), 2.0f)
+                    else
+                        Particle.DustTransition(Color.fromRGB(255, 203, 66), Color.fromRGB(255, 178, 0), 2.0f)
+                    w.spawnParticle(Particle.DUST_COLOR_TRANSITION, x, y, z, (thickness * 5).pow(2).toInt(), thickness / 2, thickness / 2, thickness / 2, 0.01, option)
                 }
             }
             to = null
@@ -229,6 +236,7 @@ class AbilityElectricShockWave : ActiveAbility<AbilityConceptElectricShockWave>(
         cooldownTime = 0L
     }
 }
+
 
 
 

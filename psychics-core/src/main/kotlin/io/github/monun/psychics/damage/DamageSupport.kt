@@ -115,12 +115,12 @@ object DamageSupport {
 
 /**
  * 아이템의 보호 인챈트 수치를 가져옵니다.
- * [Enchantment.PROTECTION_ENVIRONMENTAL]의 경우 두배의 수치를 반환합니다.
+ * [Enchantment.PROTECTION]의 경우 두배의 수치를 반환합니다.
  */
 fun ItemStack.getProtection(enchantment: Enchantment): Int {
-    var protection = getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL)
+    var protection = getEnchantmentLevel(Enchantment.PROTECTION)
 
-    if (enchantment != Enchantment.PROTECTION_ENVIRONMENTAL) {
+    if (enchantment != Enchantment.PROTECTION) {
         val enchantmentProtection = getEnchantmentLevel(enchantment) shl 1
 
         if (protection < enchantmentProtection) {
@@ -151,8 +151,8 @@ fun LivingEntity.getProtection(enchantment: Enchantment): Int {
 @Suppress("UselessCallOnCollection")
 val LivingEntity.attackDamage: Double
     get() {
-        val armor = getAttribute(Attribute.GENERIC_ARMOR)?.value ?: 0.0
-        val armorTough = getAttribute(Attribute.GENERIC_ARMOR_TOUGHNESS)?.value ?: 0.0
+        val armor = getAttribute(Attribute.ARMOR)?.value ?: 0.0
+        val armorTough = getAttribute(Attribute.ARMOR_TOUGHNESS)?.value ?: 0.0
         val psionicsLevel = equipment?.armorContents?.asSequence()?.filterNotNull()?.sumOf { it.psionicsLevel } ?: 0
 
         return DamageSupport.calculateAttackDamage(armor, armorTough, psionicsLevel.toDouble())
@@ -197,8 +197,8 @@ private fun LivingEntity.psychicDamageActual(
     knockbackSource: Location? = damager.location,
     knockbackForce: Double = 0.0
 ): Double {
-    val armor = getAttribute(Attribute.GENERIC_ARMOR)?.value ?: 0.0
-    val armorTough = getAttribute(Attribute.GENERIC_ARMOR_TOUGHNESS)?.value ?: 0.0
+    val armor = getAttribute(Attribute.ARMOR)?.value ?: 0.0
+    val armorTough = getAttribute(Attribute.ARMOR_TOUGHNESS)?.value ?: 0.0
     val protection = getProtection(type.protection)
     val actualDamage = DamageSupport.calculatePsychicDamage(damage, armor, armorTough, protection.toDouble())
 
@@ -212,7 +212,7 @@ private fun LivingEntity.psychicDamageActual(
         val deltaZ = knockbackSource.z - targetLocation.z
 
         // 대상 넉백 저항으로 인한 넉백 감소
-        getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE)?.run { force *= 1.0 - value }
+        getAttribute(Attribute.KNOCKBACK_RESISTANCE)?.run { force *= 1.0 - value }
 
         if (force > 0.0) {
             val oldVelocity = velocity
@@ -239,7 +239,7 @@ private fun LivingEntity.psychicDamageActual(
     noDamageTicks = 0
     if (this is EnderDragon) {
         health = max(0.0, health - actualDamage)
-        playEffect(EntityEffect.HURT)
+        this.playHurtAnimation(0f)
         world.playSound(location, Sound.ENTITY_ENDER_DRAGON_HURT, 1.0F, 1.0F)
     } else damage(actualDamage)
 
@@ -258,7 +258,7 @@ fun LivingEntity.psychicHeal(
 
     if (!event.callEvent()) return 0.0
 
-    val maxHealth = getAttribute(Attribute.GENERIC_MAX_HEALTH)?.value ?: error("Not found attribute Attribute.GENERIC_MAX_HEALTH")
+    val maxHealth = getAttribute(Attribute.MAX_HEALTH)?.value ?: error("Not found attribute Attribute.MAX_HEALTH")
     val newAmount = event.amount
     val newHealth = min(maxHealth, currentHealth + newAmount)
 

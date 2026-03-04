@@ -83,6 +83,7 @@ class AbilitySwordThrowing : Ability<AbilityConceptSwordThrowing>(), Listener {
             Material.WOODEN_SWORD,
             Material.STONE_SWORD,
             Material.IRON_SWORD,
+            Material.COPPER_SWORD,
             Material.GOLDEN_SWORD,
             Material.DIAMOND_SWORD,
             Material.NETHERITE_SWORD
@@ -152,7 +153,7 @@ class AbilitySwordThrowing : Ability<AbilityConceptSwordThrowing>(), Listener {
     private fun spawnDagger(startLoc: Location, itemStack: ItemStack, initVelocity: Vector) {
         val stand = startLoc.world.spawn(startLoc, ItemDisplay::class.java) {
             it.isPersistent = false
-            it.itemStack = itemStack
+            it.setItemStack(itemStack)
             it.isGlowing = true
         }
 
@@ -180,7 +181,7 @@ class AbilitySwordThrowing : Ability<AbilityConceptSwordThrowing>(), Listener {
             }
 
             if (stuck) {
-                location.world.spawnParticle(Particle.ENCHANTMENT_TABLE, location, 1, 0.2, 0.3, 0.2, 0.0)
+                location.world.spawnParticle(Particle.ENCHANT, location, 1, 0.2, 0.3, 0.2, 0.0)
             } else {
                 velocity = velocity.apply { y -= concept.daggerGravity }
             }
@@ -211,7 +212,7 @@ class AbilitySwordThrowing : Ability<AbilityConceptSwordThrowing>(), Listener {
 
                 world.playSound(hitLoc, Sound.ITEM_TRIDENT_HIT, SoundCategory.PLAYERS, 0.6f, 1.5f)
                 world.spawnParticle(
-                    Particle.BLOCK_CRACK,
+                    Particle.BLOCK,
                     hitLoc,
                     12,
                     0.2,
@@ -325,7 +326,7 @@ class AbilitySwordThrowing : Ability<AbilityConceptSwordThrowing>(), Listener {
             val displayLocation = target.location.add(0.0, target.height + 0.5, 0.0)
             val display = world.spawn(displayLocation, ItemDisplay::class.java) {
                 it.isPersistent = false
-                it.itemStack = item.clone()
+                it.setItemStack(item.clone())
                 it.billboard = Display.Billboard.VERTICAL
                 val bladeAxis = Vector3f(-1.0f, 1.0f, 0.0f).normalize()
                 val down = Vector3f(0.0f, -1.0f, 0.0f)
@@ -353,7 +354,7 @@ class AbilitySwordThrowing : Ability<AbilityConceptSwordThrowing>(), Listener {
             }
 
             world.spawnParticle(
-                Particle.CRIT_MAGIC,
+                Particle.ENCHANTED_HIT,
                 target.location.add(0.0, target.height * 0.8, 0.0),
                 10,
                 0.3,
@@ -431,9 +432,9 @@ class AbilitySwordThrowing : Ability<AbilityConceptSwordThrowing>(), Listener {
 
             val damage = concept.damage
             val damageType = damage?.type ?: DamageType.MELEE
-            val meta = targetSword.display.itemStack!!.itemMeta
+            val meta = targetSword.display.itemStack.itemMeta
             val modifiers = meta?.attributeModifiers
-            val swordDamage = modifiers?.get(Attribute.GENERIC_ATTACK_DAMAGE)?.sumOf { it.amount } ?: 0.0
+            val swordDamage = modifiers?.get(Attribute.ATTACK_DAMAGE)?.sumOf { it.amount } ?: 0.0
             val damageAmount = esper.getStatistic(damage!!.stats) + swordDamage
 
             val hitSet = mutableSetOf<LivingEntity>()

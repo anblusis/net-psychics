@@ -108,7 +108,7 @@ class AbilityLeap : ActiveAbility<AbilityConceptLeap>(), Listener {
                         )
                         it.addPotionEffect(
                             PotionEffect(
-                                PotionEffectType.SLOW, (concept.slownessDurationTime / 50.0).toInt(), 1
+                                PotionEffectType.SLOWNESS, (concept.slownessDurationTime / 50.0).toInt(), 1
                             )
                         )
                     }
@@ -123,7 +123,7 @@ class AbilityLeap : ActiveAbility<AbilityConceptLeap>(), Listener {
         val location = player.location.apply { y += 1.8 }
         val world = location.world
         world.spawnParticle(
-            Particle.VILLAGER_HAPPY,
+            Particle.HAPPY_VILLAGER,
             location.x,
             location.y,
             location.z,

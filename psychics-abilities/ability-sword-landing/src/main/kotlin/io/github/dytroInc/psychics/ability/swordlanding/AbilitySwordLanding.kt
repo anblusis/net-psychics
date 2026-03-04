@@ -36,8 +36,12 @@ import org.bukkit.util.Vector
 // 주변 아군들의 속도 증가 + 힐 능력
 @Name("sword-landing")
 class AbilityConceptSwordLanding : AbilityConcept() {
+
     @Config
     var golden = Damage.of(DamageType.BLAST, EsperAttribute.ATTACK_DAMAGE to 3.0)
+
+    @Config
+    var copper = Damage.of(DamageType.BLAST, EsperAttribute.ATTACK_DAMAGE to 3.5)
 
     @Config
     var iron = Damage.of(DamageType.BLAST, EsperAttribute.ATTACK_DAMAGE to 4.0)
@@ -53,7 +57,6 @@ class AbilityConceptSwordLanding : AbilityConcept() {
 
     init {
         type = AbilityType.ACTIVE
-        cooldownTime = 50000L
         cost = 25.0
         range = 5.0
         description = listOf(
@@ -68,13 +71,15 @@ class AbilityConceptSwordLanding : AbilityConcept() {
 
     override fun onRenderTooltip(tooltip: TooltipBuilder, stats: (EsperStatistic) -> Double) {
         tooltip.stats(text("기본").color(NamedTextColor.WHITE), default) { NamedTextColor.YELLOW to "default" }
-        tooltip.stats(text("금").color(NamedTextColor.WHITE), golden) { NamedTextColor.GOLD to "golden" }
+        tooltip.stats(text("금").color(NamedTextColor.WHITE), golden) { NamedTextColor.YELLOW to "golden" }
+        tooltip.stats(text("구리").color(NamedTextColor.WHITE), copper) { NamedTextColor.GOLD to "copper" }
         tooltip.stats(text("철").color(NamedTextColor.WHITE), iron) { NamedTextColor.WHITE to "iron" }
         tooltip.stats(text("다이아몬드").color(NamedTextColor.WHITE), diamond) { NamedTextColor.AQUA to "diamond" }
         tooltip.stats(text("네더라이트").color(NamedTextColor.WHITE), netherite) { NamedTextColor.RED to "netherite" }
 
         tooltip.template("default", stats(default.stats))
         tooltip.template("golden", stats(golden.stats))
+        tooltip.template("copper", stats(copper.stats))
         tooltip.template("iron", stats(iron.stats))
         tooltip.template("diamond", stats(diamond.stats))
         tooltip.template("netherite", stats(netherite.stats))
@@ -83,6 +88,7 @@ class AbilityConceptSwordLanding : AbilityConcept() {
     fun findDamage(type: Material): Damage {
         return when (type) {
             Material.GOLDEN_SWORD -> golden
+            Material.COPPER_SWORD -> copper
             Material.IRON_SWORD -> iron
             Material.DIAMOND_SWORD -> diamond
             Material.NETHERITE_SWORD -> netherite
@@ -92,7 +98,7 @@ class AbilityConceptSwordLanding : AbilityConcept() {
 
     fun hasDamage(type: Material): Boolean {
         return when (type) {
-            Material.GOLDEN_SWORD, Material.IRON_SWORD, Material.DIAMOND_SWORD, Material.NETHERITE_SWORD -> true
+            Material.GOLDEN_SWORD, Material.COPPER_SWORD, Material.IRON_SWORD, Material.DIAMOND_SWORD, Material.NETHERITE_SWORD -> true
             else -> false
         }
     }
@@ -171,7 +177,7 @@ class AbilitySwordLanding : Ability<AbilityConceptSwordLanding>(), Listener {
                         )
                     }
                 player.spawnParticle(
-                    Particle.EXPLOSION_LARGE,
+                    Particle.EXPLOSION_EMITTER,
                     player.location.add(0.0, 0.5, 0.0),
                     50,
                     range,
@@ -181,7 +187,7 @@ class AbilitySwordLanding : Ability<AbilityConceptSwordLanding>(), Listener {
                 )
                 isLanding = false
                 // 점프 강화 부여
-                player.addPotionEffect(PotionEffect(PotionEffectType.JUMP, 60, 5))
+                player.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, 60, 5))
             }
         }
     }
@@ -189,6 +195,7 @@ class AbilitySwordLanding : Ability<AbilityConceptSwordLanding>(), Listener {
     private fun updateCooldown(cooldownTicks: Int) {
         val player = esper.player
         player.setCooldown(Material.GOLDEN_SWORD, cooldownTicks)
+        player.setCooldown(Material.COPPER_SWORD, cooldownTicks)
         player.setCooldown(Material.IRON_SWORD, cooldownTicks)
         player.setCooldown(Material.DIAMOND_SWORD, cooldownTicks)
         player.setCooldown(Material.NETHERITE_SWORD, cooldownTicks)

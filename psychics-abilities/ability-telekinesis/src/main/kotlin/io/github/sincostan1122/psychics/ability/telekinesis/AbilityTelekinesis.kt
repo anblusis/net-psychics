@@ -80,7 +80,7 @@ class AbilityTelekinesis : ActiveAbility<AbilityConceptTelekinesis>(), Listener 
                     PotionEffect(PotionEffectType.SLOW_FALLING, 10, 255, false, false, false)
                 )
                 esper.player.addPotionEffect(
-                    PotionEffect(PotionEffectType.SLOW, 10, 5, false, false, false)
+                    PotionEffect(PotionEffectType.SLOWNESS, 10, 5, false, false, false)
                 )
             }
 
@@ -122,7 +122,7 @@ class AbilityTelekinesis : ActiveAbility<AbilityConceptTelekinesis>(), Listener 
             val world = location.world
 
             val r = max(1.0, concept.range - 2.0)
-            world.spawnParticle(Particle.EXPLOSION_HUGE, location, (r * r).toInt(), r, r, r, 0.0, null, true)
+            world.spawnParticle(Particle.EXPLOSION_EMITTER, location, (r * r).toInt(), r, r, r, 0.0, null, true)
             world.playSound(location, Sound.ENTITY_GENERIC_EXPLODE, 2.0F, 1.0F)
 
             val damage = concept.damage!!

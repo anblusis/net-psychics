@@ -11,6 +11,7 @@ import io.github.monun.psychics.damage.Damage
 import io.github.monun.psychics.damage.DamageType
 import io.github.monun.psychics.util.hostileFilter
 import io.github.monun.tap.config.Name
+import io.papermc.paper.datacomponent.DataComponentType
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
@@ -66,7 +67,7 @@ class AbilityAlchemy : Ability<AbilityConceptAlchemy>(), Listener {
                 )
                 color = Color.PURPLE
             }
-            addItemFlags(ItemFlag.HIDE_POTION_EFFECTS)
+            addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP)
         }
         private val healBottle = (ItemStack(Material.POTION)).apply {
             itemMeta = (itemMeta as PotionMeta).apply {
@@ -75,7 +76,7 @@ class AbilityAlchemy : Ability<AbilityConceptAlchemy>(), Listener {
                 )
                 color = Color.RED
             }
-            addItemFlags(ItemFlag.HIDE_POTION_EFFECTS)
+            addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP)
         }
         private val manaBottle = (ItemStack(Material.POTION)).apply {
             itemMeta = (itemMeta as PotionMeta).apply {
@@ -83,7 +84,7 @@ class AbilityAlchemy : Ability<AbilityConceptAlchemy>(), Listener {
                     text().color(NamedTextColor.WHITE).content("마나 물약").decoration(TextDecoration.ITALIC, false).build()
                 )
                 color = Color.BLUE
-                addItemFlags(ItemFlag.HIDE_POTION_EFFECTS)
+                addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP)
             }
         }
         private val potionName = arrayOf("${ChatColor.DARK_PURPLE}${ChatColor.BOLD}고통 물약", "${ChatColor.RED}${ChatColor.BOLD}치유 물약", "${ChatColor.BLUE}${ChatColor.BOLD}마나 물약")

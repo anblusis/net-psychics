@@ -1,7 +1,5 @@
 package io.github.monun.psychics.invfx
 
-import io.github.monun.invfx.InvFX
-import io.github.monun.invfx.frame.InvFrame
 import io.github.monun.psychics.PsychicConcept
 import io.github.monun.psychics.attribute.EsperStatistic
 import io.github.monun.psychics.item.addItemNonDuplicate
@@ -11,6 +9,8 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
+import xyz.icetang.lib.invfx.InvFX
+import xyz.icetang.lib.invfx.frame.InvFrame
 
 object InvPsychic {
     private val previousItem =

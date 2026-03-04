@@ -259,7 +259,7 @@ class AbilityQuickWitted : ActiveAbility<AbilityConceptQuickWitted>(), Listener 
 
         if (difficulty >= concept.resistanceStartDifficulty) {
             val resistanceAmplifier = ((difficulty - concept.resistanceStartDifficulty) / concept.resistanceAmplifierUpDifficultyInterval).coerceAtMost(concept.resistanceMaxAmplifier)
-            effects.add(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, duration, resistanceAmplifier))
+            effects.add(PotionEffect(PotionEffectType.RESISTANCE, duration, resistanceAmplifier))
         }
 
         if (difficulty >= concept.saturationStartDifficulty) {
@@ -271,7 +271,7 @@ class AbilityQuickWitted : ActiveAbility<AbilityConceptQuickWitted>(), Listener 
 
     enum class MathProblems(val effectType: PotionEffectType) {
         BASIC(PotionEffectType.SPEED),
-        INTERMEDIATE(PotionEffectType.DAMAGE_RESISTANCE),
+        INTERMEDIATE(PotionEffectType.RESISTANCE),
         ADVANCED(PotionEffectType.SATURATION);
 
         companion object {

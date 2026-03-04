@@ -150,7 +150,7 @@ class AbilityEarthquake : ActiveAbility<AbilityConceptEarthquake>(), Listener {
         val data = block.blockData
         val baseLoc = block.location.add(0.5, 0.5, 0.5)
         psychic.runTask({
-            world.spawnParticle(Particle.BLOCK_CRACK, baseLoc, 7, 0.35, 0.35, 0.35, 0.0, data)
+            world.spawnParticle(Particle.BLOCK, baseLoc, 7, 0.35, 0.35, 0.35, 0.0, data)
             // 원본 블록 임시 제거 (중복 방지, 착지 시 다시 놓임)
             block.setType(Material.AIR, false)
             val spawnLoc = baseLoc.clone().add(0.0, 0.51, 0.0)
@@ -164,7 +164,7 @@ class AbilityEarthquake : ActiveAbility<AbilityConceptEarthquake>(), Listener {
                 if (ent is LivingEntity && victimsHit.add(ent.uniqueId)) {
                     ent.psychicDamage()
                     ent.velocity = ent.velocity.add(Vector(0.0, concept.liftBaseVelocity * 2.0, 0.0))
-                    ent.addPotionEffect(PotionEffect(PotionEffectType.SLOW, concept.slowTicks, concept.slowAmplifier, false, false, true))
+                    ent.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, concept.slowTicks, concept.slowAmplifier, false, false, true))
                 }
             }
 

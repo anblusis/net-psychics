@@ -224,7 +224,7 @@ class AbilityDrone : ActiveAbility<AbilityConceptDrone>(), Listener {
             val hitLocation = location
             val range = concept.explosionRange
             world.playSound(hitLocation, Sound.ENTITY_GENERIC_EXPLODE, 1.5F, 0.1F)
-            world.spawnParticle(Particle.EXPLOSION_LARGE, hitLocation, 4, range / 2, range / 2, range / 2, 0.0)
+            world.spawnParticle(Particle.EXPLOSION_EMITTER, hitLocation, 4, range / 2, range / 2, range / 2, 0.0)
             hitLocation.getNearbyEntities(
                 range, range, range
             ).filter { entity -> esper.player.hostileFilter().test(entity) }.forEach { entity ->

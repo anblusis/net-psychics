@@ -53,7 +53,7 @@ class AbilityTimeRewind : ActiveAbility<AbilityConceptTimeRewind>() {
             player.health = health
             player.addPotionEffect(
                 PotionEffect(
-                    PotionEffectType.DAMAGE_RESISTANCE,
+                    PotionEffectType.RESISTANCE,
                     20, 200, false, false
                 )
             )

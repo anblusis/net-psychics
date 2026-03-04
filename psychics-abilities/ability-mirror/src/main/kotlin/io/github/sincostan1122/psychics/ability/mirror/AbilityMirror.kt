@@ -9,6 +9,7 @@ import io.github.monun.tap.config.Config
 import io.github.monun.tap.config.Name
 import io.github.monun.tap.fake.FakeEntity
 import net.kyori.adventure.text.Component.text
+import org.bukkit.Color
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Particle
@@ -58,15 +59,15 @@ class AbilityMirror : ActiveAbility<AbilityConceptMirror>(), Listener {
     }
     override fun onCast(event: PlayerEvent, action: WandAction, target: Any?) {
         val world = particleloc().world
-        world.spawnParticle(Particle.SPELL_INSTANT, particleloc(), 30)
+        world.spawnParticle(Particle.INSTANT_EFFECT, particleloc(), 30, Particle.Spell(Color.WHITE, 1.0f))
 
 
 
         esper.player.addPotionEffect(
-            PotionEffect(PotionEffectType.SLOW, (concept.durationTime / 50.0).toInt(), 5, false, false, false)
+            PotionEffect(PotionEffectType.SLOWNESS, (concept.durationTime / 50.0).toInt(), 5, false, false, false)
         )
         esper.player.addPotionEffect(
-            PotionEffect(PotionEffectType.SLOW_DIGGING, (concept.durationTime / 50.0).toInt(), 20, false, false, false)
+            PotionEffect(PotionEffectType.MINING_FATIGUE, (concept.durationTime / 50.0).toInt(), 20, false, false, false)
         )
         esper.player.addPotionEffect(
             PotionEffect(PotionEffectType.WEAKNESS, (concept.durationTime / 50.0).toInt(), 10, false, false, false)
@@ -92,17 +93,17 @@ class AbilityMirror : ActiveAbility<AbilityConceptMirror>(), Listener {
             event.isCancelled = true
 
 
-            esper.player.removePotionEffect(PotionEffectType.SLOW_DIGGING)
+            esper.player.removePotionEffect(PotionEffectType.MINING_FATIGUE)
             esper.player.removePotionEffect(PotionEffectType.WEAKNESS)
-            esper.player.removePotionEffect(PotionEffectType.SLOW)
+            esper.player.removePotionEffect(PotionEffectType.SLOWNESS)
             esper.player.addPotionEffect(
-                PotionEffect(PotionEffectType.INCREASE_DAMAGE, concept.burftime * 20, 1, false, false, false)
+                PotionEffect(PotionEffectType.STRENGTH, concept.burftime * 20, 1, false, false, false)
             )
             esper.player.addPotionEffect(
                 PotionEffect(PotionEffectType.SPEED, concept.burftime * 20, 2, false, false, false)
             )
             esper.player.addPotionEffect(
-                PotionEffect(PotionEffectType.FAST_DIGGING, concept.burftime * 20, 2, false, false, false)
+                PotionEffect(PotionEffectType.HASTE, concept.burftime * 20, 2, false, false, false)
             )
 
 

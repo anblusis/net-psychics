@@ -92,6 +92,6 @@ class AbilityShield : ActiveAbility<AbilityConceptShield>(), Listener {
         val location = player.location.apply { y += 2.0 }
         val world = location.world
 
-        world.spawnParticle(Particle.TOTEM, location.x, location.y, location.z, 1, 0.25, 0.0, 0.25, 0.0, null, true)
+        world.spawnParticle(Particle.TOTEM_OF_UNDYING, location.x, location.y, location.z, 1, 0.25, 0.0, 0.25, 0.0, null, true)
     }
 }
