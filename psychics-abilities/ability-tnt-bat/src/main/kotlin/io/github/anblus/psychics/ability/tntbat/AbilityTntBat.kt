@@ -7,24 +7,20 @@ import io.github.monun.psychics.attribute.EsperAttribute
 import io.github.monun.psychics.attribute.EsperStatistic
 import io.github.monun.psychics.damage.Damage
 import io.github.monun.psychics.damage.DamageType
-import io.github.monun.psychics.damage.psychicDamage
 import io.github.monun.psychics.tooltip.TooltipBuilder
 import io.github.monun.psychics.tooltip.stats
-import io.github.monun.psychics.tooltip.template
 import io.github.monun.psychics.util.TargetFilter
+import io.github.monun.psychics.util.hostileFilter
 import io.github.monun.tap.config.Config
 import io.github.monun.tap.config.Name
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
-import org.bukkit.Bukkit
-import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Particle
 import org.bukkit.Sound
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Bat
 import org.bukkit.entity.ItemDisplay
-import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -36,8 +32,6 @@ import org.bukkit.util.Vector
 import org.joml.Quaternionf
 import org.joml.Vector3f
 import java.util.UUID
-import kotlin.math.cos
-import kotlin.math.sin
 import kotlin.random.Random
 
 @Name("tnt-bat")
@@ -58,9 +52,6 @@ class AbilityConceptTntBat : AbilityConcept() {
     var dashSpeed = 0.95
 
     @Config
-    var maxLifetimeTicks = 120
-
-    @Config
     var blastRange = 3.0
 
     init {
@@ -68,24 +59,21 @@ class AbilityConceptTntBat : AbilityConcept() {
         type = AbilityType.ACTIVE
         cost = 35.0
         cooldownTime = 14000L
-        knockback = 1.2
+        durationTime = 6000L
+        knockback = 0.6
         damage = Damage.of(DamageType.BLAST, EsperStatistic.of(EsperAttribute.ATTACK_DAMAGE to 3.5))
         description = listOf(
             text("자신의 주변에 폭탄 박쥐떼를 소환합니다."),
             text("박쥐는 잠시 표적을 찾지 않다가, 근처 적을 발견하면 돌진해 폭발합니다."),
             text("박쥐는 죽거나 수명이 끝나도 폭발합니다.")
         )
-        wand = ItemStack(Material.TNT)
+        wand = ItemStack(Material.BLACK_DYE)
     }
 
     override fun onRenderTooltip(tooltip: TooltipBuilder, stats: (EsperStatistic) -> Double) {
         tooltip.stats(spawnCount) { NamedTextColor.GREEN to "소환 수" to "마리" }
-        tooltip.stats(targetDelayTicks / 20.0) { NamedTextColor.YELLOW to "표적 탐지 지연" to "초" }
+        tooltip.stats(targetDelayTicks / 20.0) { NamedTextColor.YELLOW to "표적 탐지 시작" to "초 후" }
         tooltip.stats(blastRange) { NamedTextColor.RED to "폭발 범위" to "블록" }
-        tooltip.stats(text("폭발"), damage ?: Damage.of(DamageType.BLAST, EsperAttribute.ATTACK_DAMAGE to 0.0)) {
-            NamedTextColor.DARK_RED to "batDamage"
-        }
-        tooltip.template("batDamage", stats((damage ?: return).stats))
     }
 }
 
@@ -107,10 +95,9 @@ class AbilityTntBat : ActiveAbility<AbilityConceptTntBat>(), Listener {
         val player = esper.player
         val world = player.world
 
-        cooldownTime = concept.cooldownTime
-        psychic.consumeMana(concept.cost)
+        exhaust()
 
-        repeat(concept.spawnCount.coerceAtLeast(1)) {
+        repeat(concept.spawnCount) {
             val offsetX = (Random.nextDouble() - 0.5) * concept.spawnSpread
             val offsetZ = (Random.nextDouble() - 0.5) * concept.spawnSpread
             val spawn = player.location.clone().add(offsetX, 1.0, offsetZ)
@@ -120,10 +107,6 @@ class AbilityTntBat : ActiveAbility<AbilityConceptTntBat>(), Listener {
                 isCustomNameVisible = true
                 getAttribute(Attribute.MAX_HEALTH)?.baseValue = 1.0
                 health = 1.0
-            }
-
-            runCatching {
-                Bukkit.getScoreboardManager().mainScoreboard.getEntryTeam(player.name)?.addEntry(bat.uniqueId.toString())
             }
 
             val tntDisplay = world.spawn(spawn.clone().add(0.0, -0.5, 0.0), ItemDisplay::class.java).apply {
@@ -141,9 +124,9 @@ class AbilityTntBat : ActiveAbility<AbilityConceptTntBat>(), Listener {
                 bat = bat,
                 tntDisplay = tntDisplay,
                 owner = player,
-                spawnedTick = currentTick,
-                orbitCenter = player.location.clone()
+                spawnedTick = currentTick
             )
+            psychic.plugin.entityEventManager.registerEvents(bat, this)
         }
 
         world.playSound(player.location, Sound.ENTITY_BAT_TAKEOFF, 1.3f, 1.1f)
@@ -163,19 +146,15 @@ class AbilityTntBat : ActiveAbility<AbilityConceptTntBat>(), Listener {
         val bat = event.entity as? Bat ?: return
         val tntBat = bats.remove(bat.uniqueId) ?: return
         event.drops.clear()
-        tntBat.explode(bat.location)
+        tntBat.explode()
     }
 
     private inner class TntBat(
         val bat: Bat,
         val tntDisplay: ItemDisplay,
         val owner: Player,
-        val spawnedTick: Int,
-        val orbitCenter: Location
+        val spawnedTick: Int
     ) {
-        private val targetFilter = TargetFilter(owner)
-        private val orbitRadius = 1.4 + Random.nextDouble() * 1.1
-        private var orbitAngle = Random.nextDouble(0.0, Math.PI * 2.0)
         private var dashDirection: Vector? = null
         private var exploded = false
 
@@ -186,22 +165,21 @@ class AbilityTntBat : ActiveAbility<AbilityConceptTntBat>(), Listener {
             }
 
             val lifeTicks = currentTick - spawnedTick
-            if (lifeTicks >= concept.maxLifetimeTicks) {
-                explode(bat.location)
+            if (lifeTicks >= concept.durationTime / 50) {
+                explode()
                 return false
             }
 
             if (dashDirection == null && lifeTicks >= concept.targetDelayTicks) {
                 findTargetDirection()?.let { direction ->
                     dashDirection = direction
+                    bat.setAI(false)
                     faceDirection(direction)
                     bat.world.playSound(bat.location, Sound.ENTITY_BAT_LOOP, 0.9f, 0.5f)
                 }
             }
 
-            if (dashDirection == null) {
-                updateOrbitMotion()
-            } else {
+            if (dashDirection != null) {
                 updateDashMotion(dashDirection!!)
             }
 
@@ -211,24 +189,10 @@ class AbilityTntBat : ActiveAbility<AbilityConceptTntBat>(), Listener {
 
         private fun findTargetDirection(): Vector? {
             val world = bat.world
-            return world.getNearbyEntities(bat.location, concept.searchRange, concept.searchRange, concept.searchRange)
-                        .asSequence()
-                        .filterIsInstance<Player>()
-                        .filter { it.isValid && targetFilter.test(it) }
-                        .minByOrNull { it.location.distanceSquared(bat.location) }?.eyeLocation?.toVector()?.subtract(bat.eyeLocation.toVector())
+            return world.getNearbyLivingEntities(bat.location, concept.searchRange, concept.searchRange, concept.searchRange)
+                .filter { TargetFilter(esper.player).test(it) }
+                .minByOrNull { it.location.distanceSquared(bat.location) }?.boundingBox?.center?.subtract(bat.eyeLocation.toVector())
                 ?.normalize()
-        }
-
-        private fun updateOrbitMotion() {
-            orbitAngle += 0.14
-            val yWave = 0.35 * sin((currentTick + spawnedTick) * 0.18)
-            val target = orbitCenter.clone().add(cos(orbitAngle) * orbitRadius, 1.2 + yWave, sin(orbitAngle) * orbitRadius)
-            val move = target.toVector().subtract(bat.location.toVector()).multiply(0.33)
-            if (move.lengthSquared() > 0.0001) {
-                val next = bat.location.clone().add(move)
-                next.direction = move.clone().normalize()
-                bat.teleport(next)
-            }
         }
 
         private fun updateDashMotion(direction: Vector) {
@@ -241,14 +205,13 @@ class AbilityTntBat : ActiveAbility<AbilityConceptTntBat>(), Listener {
                 stepDistance,
                 org.bukkit.FluidCollisionMode.NEVER,
                 true,
-                0.35
+                0.2
             ) { entity ->
-                entity is Player && entity.isValid && targetFilter.test(entity)
+                esper.player.hostileFilter().test(entity)
             }
 
             if (rayResult != null) {
-                val hitLocation = rayResult.hitPosition.toLocation(world)
-                explode(hitLocation)
+                explode()
                 return
             }
 
@@ -272,33 +235,29 @@ class AbilityTntBat : ActiveAbility<AbilityConceptTntBat>(), Listener {
             bat.teleport(location)
         }
 
-        fun explode(center: Location) {
+        fun explode() {
             if (exploded) return
             exploded = true
 
+            val center = bat.location
             val world = center.world
-            val damage = concept.damage ?: return
-            val amount = esper.getStatistic(damage.stats)
 
             world.spawnParticle(Particle.EXPLOSION_EMITTER, center, 1, 0.0, 0.0, 0.0, 0.0)
-            world.spawnParticle(Particle.LARGE_SMOKE, center, 22, 0.3, 0.25, 0.3, 0.02)
             world.playSound(center, Sound.ENTITY_GENERIC_EXPLODE, 1.2f, 1.2f)
 
-            world.getNearbyEntities(center, concept.blastRange, concept.blastRange, concept.blastRange)
-                .asSequence()
-                .filterIsInstance<LivingEntity>()
-                .filter { targetFilter.test(it) }
+            world.getNearbyLivingEntities(center, concept.blastRange, concept.blastRange, concept.blastRange)
+                .filter { esper.player.hostileFilter().test(it) }
                 .forEach { victim ->
-                    victim.psychicDamage(this@AbilityTntBat, damage.type, amount, owner, center, concept.knockback)
+                    victim.psychicDamage(knockbackLocation = center)
                 }
 
             removeSilently()
         }
 
         fun removeSilently() {
+            psychic.plugin.entityEventManager.unregisterEvent(bat, this@AbilityTntBat)
             if (tntDisplay.isValid) tntDisplay.remove()
             if (bat.isValid) bat.remove()
         }
     }
 }
-
